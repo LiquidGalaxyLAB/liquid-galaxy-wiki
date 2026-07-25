@@ -54,6 +54,7 @@ async function init() {
   }
 
   setupEventListeners();
+  setupIframeMessaging();
 }
 
 // Render Navigation Drawer
@@ -255,6 +256,8 @@ function renderHome() {
       window.location.hash = 'how-to-contribute-to-lg-wiki.md';
     });
   }
+
+  sendIframeHeight();
 }
 
 /**
@@ -371,6 +374,8 @@ async function loadPage(filename) {
     // Ensure we scroll to the top of the newly loaded document
     const contentArea = document.querySelector('.content-area');
     if (contentArea) contentArea.scrollTo(0, 0);
+
+    sendIframeHeight();
   }
 }
 
@@ -711,6 +716,123 @@ function _renderDocNavigation(filename) {
   }
 
   markdownContent.appendChild(navContainer);
+}
+
+
+// ── [IFRAME COMMUNICATION] Send Height & Scroll Height to Parent Window ─────
+/**
+ * Sends current height, scrollHeight, scrollTop and window metrics to parent window
+ * via postMessage when embedded inside an iframe (matches GitHub Issue #1 spec).
+ */
+function sendIframeHeight() {
+  if (window.parent && window.parent !== window) {
+    const appBar = document.querySelector('.app-bar');
+    const contentArea = document.querySelector('.content-area');
+    const mainContent = document.getElementById('main-content');
+    const markdownNode = document.getElementById('markdown-content');
+
+    const appBarHeight = appBar ? appBar.offsetHeight : 0;
+    const contentScrollHeight = contentArea ? contentArea.scrollHeight : 0;
+    const mainScrollHeight = mainContent ? mainContent.scrollHeight : 0;
+    const markdownScrollHeight = markdownNode ? markdownNode.scrollHeight : 0;
+
+    const bodyMetrics = document.body ? [
+      document.body.scrollHeight,
+      document.body.offsetHeight,
+      document.body.clientHeight
+    ] : [0, 0, 0];
+
+    const docMetrics = document.documentElement ? [
+      document.documentElement.scrollHeight,
+      document.documentElement.offsetHeight,
+      document.documentElement.clientHeight
+    ] : [0, 0, 0];
+
+    const rawMaxHeight = Math.max(...bodyMetrics, ...docMetrics);
+
+    // Total content height (app bar + inner scroll height) for auto-resizing iframe shell
+    const totalHeight = Math.max(
+      appBarHeight + Math.max(contentScrollHeight, mainScrollHeight, markdownScrollHeight),
+      rawMaxHeight
+    );
+
+    // Scroll height of document content
+    const scrollHeight = Math.max(contentScrollHeight, rawMaxHeight, mainScrollHeight);
+    const scrollTop = contentArea ? contentArea.scrollTop : window.scrollY;
+    const clientHeight = contentArea ? contentArea.clientHeight : window.innerHeight;
+
+    const payload = {
+      type: 'iframe-height', // exact type specified in GitHub Issue #1
+      action: 'resize',
+      height: totalHeight,
+      scrollHeight: scrollHeight,
+      scrollTop: scrollTop,
+      clientHeight: clientHeight,
+      offsetHeight: totalHeight,
+      windowHeight: window.innerHeight,
+      docHeight: totalHeight,
+      docScrollHeight: scrollHeight
+    };
+
+    window.parent.postMessage(payload, '*');
+  }
+}
+
+/**
+ * Sets up listeners and observers to automatically notify parent window of height & scroll changes.
+ * Implements load, resize, ResizeObserver, MutationObserver, and window message listener.
+ */
+function setupIframeMessaging() {
+  sendIframeHeight();
+
+  // Load and scroll listeners
+  window.addEventListener('load', sendIframeHeight);
+  window.addEventListener('scroll', sendIframeHeight, { passive: true });
+  window.addEventListener('resize', sendIframeHeight, { passive: true });
+
+  const contentArea = document.querySelector('.content-area');
+  if (contentArea) {
+    contentArea.addEventListener('scroll', sendIframeHeight, { passive: true });
+  }
+
+  // ResizeObserver for DOM / content changes (as in Issue #1)
+  if ('ResizeObserver' in window) {
+    const observer = new ResizeObserver(() => {
+      sendIframeHeight();
+    });
+    if (document.body) observer.observe(document.body);
+    if (contentArea) observer.observe(contentArea);
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) observer.observe(mainContent);
+    const markdownNode = document.getElementById('markdown-content');
+    if (markdownNode) observer.observe(markdownNode);
+  }
+
+  // Fallback MutationObserver for content changes (as in Issue #1)
+  if ('MutationObserver' in window && document.body) {
+    const mutationObserver = new MutationObserver(() => {
+      sendIframeHeight();
+    });
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true
+    });
+  }
+
+  // Support direct ping/request from parent window
+  window.addEventListener('message', (e) => {
+    if (!e.data) return;
+    if (
+      e.data === 'getHeight' ||
+      e.data === 'requestHeight' ||
+      e.data.type === 'getHeight' ||
+      e.data.type === 'requestHeight'
+    ) {
+      sendIframeHeight();
+    }
+  });
 }
 
 

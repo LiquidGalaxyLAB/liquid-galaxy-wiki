@@ -1,4 +1,4 @@
-import { Octokit } from 'https://esm.run/octokit';
+import { Octokit } from 'https://esm.sh/octokit';
 
 // ── Public read-only content repo (no token required) ────────────────────────
 const CONTENT_OWNER = 'LiquidGalaxyLAB';

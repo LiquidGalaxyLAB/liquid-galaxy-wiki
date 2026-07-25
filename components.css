@@ -74,10 +74,10 @@ a:focus-visible {
 }
 
 .brand-logo {
-  width: 36px;
+  width: 70px;
   height: 36px;
   border-radius: var(--md-sys-shape-corner-small);
-  background: var(--md-sys-color-primary);
+  /* background: var(--md-sys-color-primary); */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,7 +86,7 @@ a:focus-visible {
   transition: background var(--md-sys-motion-duration-short-4) var(--md-sys-motion-easing-standard);
 }
 .brand-logo img {
-  width: 28px;
+  width: 64px;
   height: 28px;
   object-fit: contain;
 }

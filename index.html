@@ -31,10 +31,20 @@
   -->
   <script>
     (function () {
-      var saved = localStorage.getItem('lg-theme');
-      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var theme = saved || (prefersDark ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', theme);
+      var isIframeParam = window.location.href.indexOf('iframe=true') !== -1;
+      if (isIframeParam) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.id = 'token-dark-stylesheet';
+        link.href = 'token_dark.css';
+        document.head.appendChild(link);
+      } else {
+        var saved = localStorage.getItem('lg-theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var theme = saved || (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      }
     })();
   </script>
 
@@ -49,13 +59,13 @@
   <link rel="stylesheet" href="components.css">
   <link rel="stylesheet" href="layout.css">
 
-  <!-- ── Syntax Highlighting Theme ── -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
+  <!-- ── Syntax Highlighting Theme (Local & Theme-Aware) ── -->
+  <link rel="stylesheet" href="syntax.css">
 
   <!-- ── Material Web Components (via CDN) ── -->
   <script type="module">
-    import "https://esm.run/@material/web/all.js";
-    import { styles as typescaleStyles } from "https://esm.run/@material/web/typography/md-typescale-styles.js";
+    import "https://esm.sh/@material/web/all.js";
+    import { styles as typescaleStyles } from "https://esm.sh/@material/web/typography/md-typescale-styles.js";
     document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
   </script>
 
@@ -63,9 +73,9 @@
   <script type="importmap">
     {
       "imports": {
-        "marked": "https://esm.run/marked",
-        "marked-highlight": "https://esm.run/marked-highlight",
-        "highlight.js": "https://esm.run/highlight.js"
+        "marked": "https://esm.sh/marked",
+        "marked-highlight": "https://esm.sh/marked-highlight",
+        "highlight.js": "https://esm.sh/highlight.js"
       }
     }
   </script>
@@ -94,7 +104,7 @@
         <span class="material-icons" aria-hidden="true">menu</span>
       </md-icon-button>
 
-      <a href="#" class="brand" aria-label="LG Wiki — home" style="text-decoration:none;">
+      <a href="#" class="brand" aria-label="LG Wiki - home" style="text-decoration:none;">
         <div class="brand-logo" aria-hidden="true">
           <img src="public/assets/wiki-logo.png" alt="" width="28" height="28"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">

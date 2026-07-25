@@ -16,6 +16,8 @@ const SHELL_ASSETS = [
   './',
   './index.html',
   './tokens.css',
+  './token_dark.css',
+  './syntax.css',
   './components.css',
   './layout.css',
   './styles.css',
@@ -41,6 +43,7 @@ const CDN_ORIGINS = [
   'https://fonts.gstatic.com',
   'https://cdnjs.cloudflare.com',
   'https://esm.run',
+  'https://esm.sh',
 ];
 
 // GitHub raw content origin

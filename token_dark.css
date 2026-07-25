@@ -1,0 +1,173 @@
+/* ====================================================================
+   TOKEN_DARK.CSS — Desaturated Grayish-Blue Dark Theme for Iframe & Embeds
+   Base Background: #0e1012 (body, menu, sidebar, content area)
+   ==================================================================== */
+
+:root,
+html[data-theme="dark"],
+html[data-theme="dark-iframe"] {
+  /* ── Primary Accent — Desaturated Grayish Blue ── */
+  --palette-primary-0:    #000000;
+  --palette-primary-10:   #0d1522;
+  --palette-primary-20:   #182436;
+  --palette-primary-30:   #25354e;
+  --palette-primary-40:   #344868;
+  --palette-primary-50:   #475d82;
+  --palette-primary-60:   #5c749d;
+  --palette-primary-70:   #748cb9;
+  --palette-primary-80:   #8fa5d4;   /* Main accent light grayish blue */
+  --palette-primary-90:   #c8d6f0;
+  --palette-primary-95:   #e5edfb;
+  --palette-primary-100:  #ffffff;
+
+  /* ── Neutral Palette — Seeded from #0e1012 ── */
+  --palette-neutral-0:    #000000;
+  --palette-neutral-4:    #090a0c;   /* Deepest container lowest */
+  --palette-neutral-6:    #0e1012;   /* Base surface background #0e1012 */
+  --palette-neutral-10:   #121417;   /* Container low */
+  --palette-neutral-12:   #15181c;   /* Container */
+  --palette-neutral-17:   #1a1e23;   /* Container high */
+  --palette-neutral-22:   #20242b;   /* Container highest */
+  --palette-neutral-24:   #242931;   /* Surface bright */
+  --palette-neutral-30:   #2c323c;
+  --palette-neutral-40:   #414856;
+  --palette-neutral-50:   #596171;
+  --palette-neutral-60:   #737b8c;
+  --palette-neutral-70:   #8f97a8;   /* Muted text */
+  --palette-neutral-80:   #abb3c4;
+  --palette-neutral-87:   #c2c9d8;
+  --palette-neutral-90:   #dcdfe8;   /* Main body text */
+  --palette-neutral-92:   #e2e5ee;
+  --palette-neutral-94:   #e8ebf4;
+  --palette-neutral-96:   #eeeffa;
+  --palette-neutral-98:   #f5f6fc;
+  --palette-neutral-100:  #ffffff;
+
+  /* ── Neutral Variant — Grayish Blue Tones ── */
+  --palette-neutral-var-10:  #111622;
+  --palette-neutral-var-20:  #1f2636;
+  --palette-neutral-var-28:  #222733;   /* Muted hairline borders */
+  --palette-neutral-var-30:  #2a3243;
+  --palette-neutral-var-40:  #404a5e;
+  --palette-neutral-var-50:  #586379;
+  --palette-neutral-var-60:  #727e96;
+  --palette-neutral-var-70:  #8b94a5;   /* Secondary muted grayish text */
+  --palette-neutral-var-80:  #a8b2c4;
+  --palette-neutral-var-90:  #c8d1e2;
+  --palette-neutral-var-95:  #e4e9f5;
+
+  /* ── Material System Roles — Desaturated Dark ── */
+  --md-sys-color-primary:               #8fa5d4;
+  --md-sys-color-on-primary:            #121d2e;
+  --md-sys-color-primary-container:     #25354e;
+  --md-sys-color-on-primary-container:  #c8d6f0;
+  --md-sys-color-inverse-primary:       #344868;
+
+  --md-sys-color-secondary:             #a8b2c4;
+  --md-sys-color-on-secondary:          #1b2332;
+  --md-sys-color-secondary-container:   #2a3243;
+  --md-sys-color-on-secondary-container:#c8d1e2;
+
+  --md-sys-color-tertiary:              #8b9dbe;
+  --md-sys-color-on-tertiary:           #141c2b;
+  --md-sys-color-tertiary-container:    #243046;
+  --md-sys-color-on-tertiary-container: #d2dcf0;
+
+  /* ── Surface / Background — Forced to #0e1012 ── */
+  --md-sys-color-background:                #0e1012;
+  --md-sys-color-on-background:             #dcdfe8;
+  --md-sys-color-surface:                   #0e1012;
+  --md-sys-color-surface-dim:               #090a0c;
+  --md-sys-color-surface-bright:            #242931;
+  --md-sys-color-surface-container-lowest:  #090a0c;
+  --md-sys-color-surface-container-low:     #121417;
+  --md-sys-color-surface-container:         #15181c;
+  --md-sys-color-surface-container-high:    #1a1e23;
+  --md-sys-color-surface-container-highest: #20242b;
+  --md-sys-color-on-surface:                #dcdfe8;
+  --md-sys-color-on-surface-variant:        #8b94a5;
+  --md-sys-color-surface-variant:           #2a3243;
+  --md-sys-color-surface-tint:              #8fa5d4;
+
+  /* ── Outline / Hairline Borders ── */
+  --md-sys-color-outline:          #404a5e;
+  --md-sys-color-outline-variant:  #222733;
+
+  /* ── Inverse ── */
+  --md-sys-color-inverse-surface:     #dcdfe8;
+  --md-sys-color-inverse-on-surface:  #1a1e23;
+
+  /* ── Scrim / Shadow ── */
+  --md-sys-color-scrim:   #000000;
+  --md-sys-color-shadow:  #000000;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   EXPLICIT BACKGROUND OVERRIDES FOR #0e1012
+   Ensures Body, Topbar Menu, Sidebar Drawer, and Main Content Area
+   share the sleek #0e1012 background.
+   ───────────────────────────────────────────────────────────────────── */
+body,
+html,
+.app-bar,
+.drawer,
+.content-area,
+.site-footer {
+  background-color: #0e1012 !important;
+}
+
+/* Sidebar nav drawer background & borders */
+.drawer {
+  background: #0e1012 !important;
+  border-right: 1px solid #1a1e23 !important;
+}
+
+/* Header / App Bar menu */
+.app-bar {
+  background: #0e1012 !important;
+  border-bottom: 1px solid #1a1e23 !important;
+}
+
+/* Header search button */
+.header-search-trigger {
+  background: #15181c !important;
+  border: 1px solid #222733 !important;
+  color: #8b94a5 !important;
+}
+
+.header-search-trigger:hover {
+  background: #1a1e23 !important;
+  color: #dcdfe8 !important;
+  border-color: #344868 !important;
+}
+
+/* Navigation items in sidebar */
+md-list-item {
+  --md-list-item-label-text-color: #abb3c4;
+  --md-list-item-container-color: transparent;
+}
+
+md-list-item:hover {
+  --md-list-item-container-color: #15181c;
+}
+
+md-list-item.active {
+  --md-list-item-label-text-color: #8fa5d4;
+  --md-list-item-container-color: #1c2535;
+}
+
+/* Markdown cards and container blocks */
+.home-doc-item,
+.recent-doc-item,
+.feature-card,
+.code-block-wrapper pre {
+  background: #121417 !important;
+  border: 1px solid #222733 !important;
+}
+
+.home-doc-item:hover,
+.recent-doc-item:hover,
+.feature-card:hover {
+  background: #181c22 !important;
+  border-color: #344868 !important;
+}

@@ -11,7 +11,7 @@ const STORAGE_KEY = 'lg-theme';
 /**
  * Returns current theme ('light' | 'dark') from the html element attribute.
  */
-function getCurrentTheme() {
+function getCurrentTheme() { 
   return document.documentElement.getAttribute('data-theme') || 'light';
 }
 
@@ -49,8 +49,37 @@ function toggleTheme() {
   applyTheme(next);
 }
 
+/**
+ * Checks URL for iframe=true query param and attaches or removes token_dark.css dynamically.
+ * Does not pollute localStorage so normal viewing uses standard saved theme.
+ */
+function syncIframeTheme() {
+  const isIframeParam = window.location.href.indexOf('iframe=true') !== -1;
+  let link = document.getElementById('token-dark-stylesheet');
+
+  if (isIframeParam) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.id = 'token-dark-stylesheet';
+      link.href = 'token_dark.css';
+      document.head.appendChild(link);
+    }
+  } else {
+    if (link) {
+      link.remove();
+    }
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    applyTheme(theme);
+  }
+}
+
 // ── Wire up the theme toggle button ────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  syncIframeTheme();
   const toggle = document.getElementById('theme-toggle');
   if (toggle) {
     toggle.addEventListener('click', toggleTheme);
@@ -58,6 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme(getCurrentTheme());
   }
 });
+
+window.addEventListener('hashchange', syncIframeTheme);
+window.addEventListener('popstate', syncIframeTheme);
 
 // ── Header scroll elevation ─────────────────────────────────────────────────
 (function initScrollElevation() {

@@ -1,0 +1,160 @@
+/* ====================================================================
+   SYNTAX.CSS — Highlight.js Syntax Highlighting (Local & Theme-Aware)
+   Supports Light & Dark themes natively with Material Design tokens
+   ==================================================================== */
+
+pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: var(--space-4, 16px);
+  border-radius: var(--md-sys-shape-corner-medium, 8px);
+}
+
+code.hljs {
+  padding: 3px 5px;
+}
+
+/* ── Light Mode Code Syntax ── */
+.hljs {
+  background: var(--md-sys-color-surface-container-lowest, #f8f9fc);
+  color: var(--md-sys-color-on-surface, #181b24);
+}
+
+.hljs-keyword,
+.hljs-literal,
+.hljs-name,
+.hljs-symbol {
+  color: #005ce6;
+  font-weight: 500;
+}
+
+.hljs-link {
+  color: #005ce6;
+  text-decoration: underline;
+}
+
+.hljs-built_in,
+.hljs-type {
+  color: #008080;
+}
+
+.hljs-number,
+.hljs-class {
+  color: #098658;
+}
+
+.hljs-string,
+.hljs-meta .hljs-string {
+  color: #a31515;
+}
+
+.hljs-regexp,
+.hljs-template-tag {
+  color: #811f3f;
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-attribute {
+  color: #795e26;
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-deletion,
+.hljs-meta {
+  color: #008000;
+  font-style: italic;
+}
+
+.hljs-addition {
+  color: #22863a;
+  background-color: #f0fff4;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+/* ── Dark Mode Code Syntax (VS2015 Dark / HCT Harmonized) ── */
+html[data-theme="dark"] .hljs,
+html[data-theme="dark-iframe"] .hljs {
+  background: var(--md-sys-color-surface-container-low, #121417);
+  color: #dcdcdc;
+}
+
+html[data-theme="dark"] .hljs-keyword,
+html[data-theme="dark"] .hljs-literal,
+html[data-theme="dark"] .hljs-name,
+html[data-theme="dark"] .hljs-symbol,
+html[data-theme="dark-iframe"] .hljs-keyword,
+html[data-theme="dark-iframe"] .hljs-literal,
+html[data-theme="dark-iframe"] .hljs-name,
+html[data-theme="dark-iframe"] .hljs-symbol {
+  color: #569cd6;
+}
+
+html[data-theme="dark"] .hljs-link,
+html[data-theme="dark-iframe"] .hljs-link {
+  color: #569cd6;
+  text-decoration: underline;
+}
+
+html[data-theme="dark"] .hljs-built_in,
+html[data-theme="dark"] .hljs-type,
+html[data-theme="dark-iframe"] .hljs-built_in,
+html[data-theme="dark-iframe"] .hljs-type {
+  color: #4ec9b0;
+}
+
+html[data-theme="dark"] .hljs-number,
+html[data-theme="dark"] .hljs-class,
+html[data-theme="dark-iframe"] .hljs-number,
+html[data-theme="dark-iframe"] .hljs-class {
+  color: #b8d7a3;
+}
+
+html[data-theme="dark"] .hljs-string,
+html[data-theme="dark"] .hljs-meta .hljs-string,
+html[data-theme="dark-iframe"] .hljs-string,
+html[data-theme="dark-iframe"] .hljs-meta .hljs-string {
+  color: #d69d85;
+}
+
+html[data-theme="dark"] .hljs-regexp,
+html[data-theme="dark"] .hljs-template-tag,
+html[data-theme="dark-iframe"] .hljs-regexp,
+html[data-theme="dark-iframe"] .hljs-template-tag {
+  color: #9a918c;
+}
+
+html[data-theme="dark"] .hljs-title,
+html[data-theme="dark"] .hljs-section,
+html[data-theme="dark"] .hljs-attribute,
+html[data-theme="dark-iframe"] .hljs-title,
+html[data-theme="dark-iframe"] .hljs-section,
+html[data-theme="dark-iframe"] .hljs-attribute {
+  color: #dcdcaa;
+}
+
+html[data-theme="dark"] .hljs-comment,
+html[data-theme="dark"] .hljs-quote,
+html[data-theme="dark"] .hljs-deletion,
+html[data-theme="dark"] .hljs-meta,
+html[data-theme="dark-iframe"] .hljs-comment,
+html[data-theme="dark-iframe"] .hljs-quote,
+html[data-theme="dark-iframe"] .hljs-deletion,
+html[data-theme="dark-iframe"] .hljs-meta {
+  color: #57a64a;
+  font-style: italic;
+}
+
+html[data-theme="dark"] .hljs-addition,
+html[data-theme="dark-iframe"] .hljs-addition {
+  color: #b4f8c8;
+  background-color: rgba(46, 160, 67, 0.15);
+}
