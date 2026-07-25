@@ -339,7 +339,25 @@ function parseMarkdown(rawContent) {
 
 // Load a specific markdown page
 async function loadPage(filename) {
-  markdownContent.innerHTML = '<p>Loading...</p>';
+  markdownContent.innerHTML = `
+    <div class="custom-loader-wrapper">
+      <section class="custom-loader-section">
+        <h2 class="visually-hidden">Loading</h2>
+        <progress id="progress" class="visually-hidden" max="100" value="0"></progress>
+        <svg width="120" height="120" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g clip-path="url(#clip0_289_154)">
+            <path class="circle" d="M130.231 25.1387L135.453 25.5488L140.644 26.2324L145.792 27.1865L150.874 28.4062L155.902 29.8965L160.83 31.6416L165.672 33.6465L170.387 35.8945L174.999 38.3984L179.469 41.1387L183.781 44.1016L187.917 47.2754L191.91 50.6846L195.709 54.29L199.314 58.0889L202.724 62.082L205.897 66.2178L208.86 70.5303L211.601 75L214.104 79.6123L216.353 84.3271L218.357 89.1689L220.103 94.0967L221.593 99.125L222.812 104.207L223.767 109.355L224.45 114.546L224.86 119.768L224.998 125L224.86 130.231L224.45 135.453L223.767 140.644L222.812 145.792L221.593 150.874L220.103 155.902L218.357 160.83L216.353 165.672L214.104 170.387L211.601 174.999L208.86 179.469L205.897 183.781L202.724 187.917L199.314 191.91L195.709 195.709L191.91 199.314L187.917 202.724L183.781 205.897L179.469 208.86L174.999 211.601L170.387 214.104L165.672 216.353L160.83 218.357L155.902 220.103L150.874 221.593L145.792 222.812L140.644 223.767L135.453 224.45L130.231 224.86L125 224.998L119.768 224.86L114.546 224.45L109.355 223.767L104.207 222.812L99.125 221.593L94.0967 220.103L89.1689 218.357L84.3271 216.353L79.6123 214.104L75 211.601L70.5303 41.1387L75 38.3984L79.6123 35.8945L84.3271 33.6465L89.1689 31.6416L94.0967 29.8965L99.125 28.4062L104.207 27.1865L109.355 26.2324L114.546 25.5488L119.768 25.1387L125 25.001L130.231 25.1387Z" stroke-width="10" stroke-linecap="round" pathLength="1" />
+            <path class="loader" d="M102.299 25.915C115.38 14.7676 134.62 14.7676 147.701 25.915L150.17 28.0186C157.377 34.1606 166.339 37.8727 175.778 38.626L179.011 38.8838C196.144 40.251 209.749 53.8564 211.116 70.9893L211.374 74.2217C212.127 83.6612 215.839 92.6227 221.981 99.8301L224.085 102.299C235.232 115.38 235.232 134.62 224.085 147.701L221.981 150.17C215.839 157.377 212.127 166.339 211.374 175.778L211.116 179.011C209.749 196.144 196.144 209.749 179.011 211.116L175.778 211.374C166.339 212.127 157.377 215.839 150.17 221.981L147.701 224.085C134.62 235.232 115.38 235.232 102.299 224.085L99.8301 221.981C92.6227 215.839 83.6612 212.127 74.2217 211.374L70.9893 211.116C53.8564 209.749 40.251 196.144 38.8838 179.011L38.626 175.778C37.8727 166.339 34.1606 157.377 28.0186 150.17L25.915 147.701C14.7676 134.62 14.7676 115.38 25.915 102.299L28.0186 99.8301C34.1606 92.6227 37.8727 83.6612 38.626 74.2217L38.8838 70.9893C40.251 53.8564 53.8564 40.251 70.9893 38.8838L74.2217 38.626C83.6612 37.8727 92.6227 34.1606 99.8301 28.0186L102.299 25.915Z" stroke-width="10" stroke-linecap="round" pathLength="1" />
+          </g>
+          <defs>
+            <clipPath id="clip0_289_154">
+              <rect width="250" height="250" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
+      </section>
+    </div>
+  `;
   const rawMarkdown = await github.fetchDoc(filename);
   
   if (rawMarkdown === null) {
@@ -376,8 +394,8 @@ async function loadPage(filename) {
     const contentArea = document.querySelector('.content-area');
     if (contentArea) contentArea.scrollTo(0, 0);
 
-    _lastSentHeight = 0;
-    sendIframeHeight();
+        _lastSentHeight = 0;
+        sendIframeHeight();
   }
 }
 
@@ -387,6 +405,10 @@ function setupEventListeners() {
   menuToggle.addEventListener('click', () => {
     const isNowOpen = drawer.classList.toggle('collapsed');
     menuToggle.setAttribute('aria-expanded', String(!drawer.classList.contains('collapsed')));
+    _lastSentHeight = 0;
+    setTimeout(() => {
+      sendIframeHeight();
+    }, 200);
   });
 
   // --- MDN-Style Search Functionality ---
@@ -562,8 +584,13 @@ window.addEventListener('hashchange', () => {
     // Only load a page when the hash is a markdown filename
     loadPage(hash);
   }
-  // Otherwise it's an in-page heading anchor (TOC link like #requirements)
-  // — let the browser handle the scroll naturally, do nothing here.
+
+  _lastSentHeight = 0;
+  sendIframeHeight();
+  setTimeout(() => {
+    _lastSentHeight = 0;
+    sendIframeHeight();
+  }, 200);
 });
 
 
@@ -733,17 +760,12 @@ function sendIframeHeight() {
     const markdownNode = document.getElementById('markdown-content');
     if (!markdownNode) return;
 
-    let calculatedHeight = 0;
-    const children = markdownNode.children;
-    if (children && children.length > 0) {
-      const top = children[0].getBoundingClientRect().top;
-      const bottom = children[children.length - 1].getBoundingClientRect().bottom;
-      calculatedHeight = Math.ceil(bottom - top) + 24; // 24px compact bottom spacing
-    } else {
-      calculatedHeight = markdownNode.offsetHeight || markdownNode.scrollHeight;
-    }
-
-    const markdownHeight = Math.max(calculatedHeight, 100);
+    // #markdown-content is a flex child that gets stretched to sidebar height.
+    // Break flex-stretching temporarily to measure true content height.
+    const prevAlignSelf = markdownNode.style.alignSelf;
+    markdownNode.style.alignSelf = 'flex-start';
+    const markdownHeight = Math.max(markdownNode.offsetHeight, 100);
+    markdownNode.style.alignSelf = prevAlignSelf;
 
     // Guard: ignore tiny <3px variations to break infinite ResizeObserver loop
     if (Math.abs(markdownHeight - _lastSentHeight) < 3) {

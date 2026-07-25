@@ -318,6 +318,67 @@ md-list-item:focus-visible {
 /* ─────────────────────────────────────────────────────────────────────
    MARKDOWN / ARTICLE CONTENT
    ───────────────────────────────────────────────────────────────────── */
+/* ── CUSTOM SVG LOADER ANIMATION ── */
+:root {
+  --p: 0.10;
+  --eps: 0.06;
+}
+
+.custom-loader-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+  width: 100%;
+  padding: var(--space-8) 0;
+}
+
+.visually-hidden {
+  clip-path: inset(50%);
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+}
+
+.custom-loader-section {
+  display: inline-block;
+  animation: loader-rotation 1.5s ease-in-out infinite;
+}
+
+.custom-loader-section svg {
+  display: block;
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.custom-loader-section path.loader {
+  stroke: var(--md-sys-color-primary, #8fa5d4);
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--p)); 
+  transition: stroke-dashoffset 2s linear;
+}
+
+.custom-loader-section path.circle {
+  stroke: var(--md-sys-color-outline-variant, #353A49);
+  display: block;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(var(--p) + var(--eps));
+  rotate: 160deg;
+  scale: 1 -1;
+  transform-origin: 50% 50%;
+  transition: stroke-dashoffset 2s linear;
+}
+
+@keyframes loader-rotation {
+  to {
+    rotate: 360deg;
+  }
+}
+
 .markdown-body {
   color: var(--md-sys-color-on-surface);
   font-size:   var(--md-sys-typescale-body-large-size);

@@ -158,7 +158,11 @@ html,
   outline: none !important;
 }
 
-/* Prevent height feedback loops & remove excessive bottom whitespace in iframe mode */
+/* Prevent height feedback loops & prevent drawer from stretching markdown-body height */
+.layout-body {
+  align-items: flex-start !important;
+}
+
 .content-wrapper {
   min-height: auto !important;
   height: auto !important;
