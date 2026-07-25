@@ -116,16 +116,62 @@ html,
   background-color: #0e1012 !important;
 }
 
-/* Sidebar nav drawer background & borders */
-.drawer {
+/* Sidebar nav drawer background & borders — no borders/shadows in iframe mode (open or closed) */
+.drawer,
+.drawer.collapsed {
   background: #0e1012 !important;
-  border-right: 1px solid #1a1e23 !important;
+  border: none !important;
+  border-right: none !important;
+  border-left: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
-/* Header / App Bar menu */
-.app-bar {
+/* Header / App Bar menu — no bottom border or shadow in iframe mode */
+.app-bar,
+.app-bar.scrolled {
   background: #0e1012 !important;
-  border-bottom: 1px solid #1a1e23 !important;
+  border: none !important;
+  border-bottom: none !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Remove left, top, right, bottom borders & shadows from all main layout containers */
+.layout-body,
+.content-area,
+.content-wrapper,
+.markdown-body,
+.toc-sidebar,
+.dynamic-title {
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Prevent height feedback loops & remove excessive bottom whitespace in iframe mode */
+.content-wrapper {
+  min-height: auto !important;
+  height: auto !important;
+}
+
+.content-area {
+  height: auto !important;
+  overflow-y: visible !important;
+}
+
+.markdown-body {
+  padding-top: var(--space-4) !important;
+  padding-bottom: var(--space-4) !important;
 }
 
 /* Header search button */

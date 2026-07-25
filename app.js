@@ -257,6 +257,7 @@ function renderHome() {
     });
   }
 
+  _lastSentHeight = 0;
   sendIframeHeight();
 }
 
@@ -375,6 +376,7 @@ async function loadPage(filename) {
     const contentArea = document.querySelector('.content-area');
     if (contentArea) contentArea.scrollTo(0, 0);
 
+    _lastSentHeight = 0;
     sendIframeHeight();
   }
 }
@@ -724,25 +726,39 @@ function _renderDocNavigation(filename) {
  * Sends current height, scrollHeight, scrollTop and window metrics to parent window
  * via postMessage when embedded inside an iframe (matches GitHub Issue #1 spec).
  */
+let _lastSentHeight = 0;
+
 function sendIframeHeight() {
   if (window.parent && window.parent !== window) {
     const markdownNode = document.getElementById('markdown-content');
-    const contentWrapper = document.querySelector('.content-wrapper');
+    if (!markdownNode) return;
+
+    let calculatedHeight = 0;
+    const children = markdownNode.children;
+    if (children && children.length > 0) {
+      const top = children[0].getBoundingClientRect().top;
+      const bottom = children[children.length - 1].getBoundingClientRect().bottom;
+      calculatedHeight = Math.ceil(bottom - top) + 24; // 24px compact bottom spacing
+    } else {
+      calculatedHeight = markdownNode.offsetHeight || markdownNode.scrollHeight;
+    }
+
+    const markdownHeight = Math.max(calculatedHeight, 100);
+
+    // Guard: ignore tiny <3px variations to break infinite ResizeObserver loop
+    if (Math.abs(markdownHeight - _lastSentHeight) < 3) {
+      return;
+    }
+    _lastSentHeight = markdownHeight;
+
     const contentArea = document.querySelector('.content-area');
-
-    const markdownScrollHeight = markdownNode ? markdownNode.scrollHeight : 0;
-    const wrapperHeight = contentWrapper ? contentWrapper.offsetHeight : 0;
-    const contentScrollHeight = contentArea ? contentArea.scrollHeight : 0;
-
-    // Pure Markdown / Content Height (excluding top menu/app bar height)
-    const markdownHeight = Math.max(markdownScrollHeight, wrapperHeight, contentScrollHeight);
     const scrollTop = contentArea ? contentArea.scrollTop : window.scrollY;
     const clientHeight = contentArea ? contentArea.clientHeight : window.innerHeight;
 
     const payload = {
       type: 'iframe-height', // exact type specified in GitHub Issue #1
       action: 'resize',
-      height: markdownHeight,         // Pure markdown height (no menu height)
+      height: markdownHeight,         // Pure markdown height (no menu/wrapper padding loop)
       scrollHeight: markdownHeight,   // Scroll height of markdown content
       markdownHeight: markdownHeight,
       scrollTop: scrollTop,
