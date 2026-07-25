@@ -6,7 +6,7 @@
 //    • Google Fonts / CDN assets  → Cache-First (stale-while-revalidate)
 // ═══════════════════════════════════════════════════════════════════════════
 
-const CACHE_VERSION = 'lg-wiki-v2';
+const CACHE_VERSION = 'lg-wiki-v3';
 const SHELL_CACHE   = `${CACHE_VERSION}-shell`;
 const CONTENT_CACHE = `${CACHE_VERSION}-content`;
 const CDN_CACHE     = `${CACHE_VERSION}-cdn`;
@@ -104,9 +104,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Same-origin app shell → Cache-First with network fallback
+  // 3. Same-origin app shell → Network-First (fresh JS/CSS code, fallback to cache)
   if (url.origin === self.location.origin) {
-    event.respondWith(cacheFirst(request, SHELL_CACHE));
+    event.respondWith(networkFirst(request, SHELL_CACHE));
     return;
   }
 });
