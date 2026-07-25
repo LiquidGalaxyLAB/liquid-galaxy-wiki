@@ -106,6 +106,15 @@ function renderNav(pages) {
 
 // Render the beautiful homepage
 function renderHome() {
+  // Clear any pending loader intervals from initial load
+  if (window.__initLoaderInterval) {
+    clearInterval(window.__initLoaderInterval);
+    window.__initLoaderInterval = null;
+  }
+  if (markdownContent._loaderInterval) {
+    clearInterval(markdownContent._loaderInterval);
+    markdownContent._loaderInterval = null;
+  }
   _currentFile = null;
   _updateActiveNav(null);
 
@@ -346,7 +355,7 @@ async function loadPage(filename) {
         <progress id="progress" class="visually-hidden" max="100" value="0"></progress>
         <svg width="120" height="120" viewBox="0 0 250 250" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g clip-path="url(#clip0_289_154)">
-            <path class="circle" d="M130.231 25.1387L135.453 25.5488L140.644 26.2324L145.792 27.1865L150.874 28.4062L155.902 29.8965L160.83 31.6416L165.672 33.6465L170.387 35.8945L174.999 38.3984L179.469 41.1387L183.781 44.1016L187.917 47.2754L191.91 50.6846L195.709 54.29L199.314 58.0889L202.724 62.082L205.897 66.2178L208.86 70.5303L211.601 75L214.104 79.6123L216.353 84.3271L218.357 89.1689L220.103 94.0967L221.593 99.125L222.812 104.207L223.767 109.355L224.45 114.546L224.86 119.768L224.998 125L224.86 130.231L224.45 135.453L223.767 140.644L222.812 145.792L221.593 150.874L220.103 155.902L218.357 160.83L216.353 165.672L214.104 170.387L211.601 174.999L208.86 179.469L205.897 183.781L202.724 187.917L199.314 191.91L195.709 195.709L191.91 199.314L187.917 202.724L183.781 205.897L179.469 208.86L174.999 211.601L170.387 214.104L165.672 216.353L160.83 218.357L155.902 220.103L150.874 221.593L145.792 222.812L140.644 223.767L135.453 224.45L130.231 224.86L125 224.998L119.768 224.86L114.546 224.45L109.355 223.767L104.207 222.812L99.125 221.593L94.0967 220.103L89.1689 218.357L84.3271 216.353L79.6123 214.104L75 211.601L70.5303 41.1387L75 38.3984L79.6123 35.8945L84.3271 33.6465L89.1689 31.6416L94.0967 29.8965L99.125 28.4062L104.207 27.1865L109.355 26.2324L114.546 25.5488L119.768 25.1387L125 25.001L130.231 25.1387Z" stroke-width="10" stroke-linecap="round" pathLength="1" />
+            <path class="circle" d="M130.231 25.1387L135.453 25.5488L140.644 26.2324L145.792 27.1865L150.874 28.4062L155.902 29.8965L160.83 31.6416L165.672 33.6465L170.387 35.8945L174.999 38.3984L179.469 41.1387L183.781 44.1016L187.917 47.2754L191.91 50.6846L195.709 54.29L199.314 58.0889L202.724 62.082L205.897 66.2178L208.86 70.5303L211.601 75L214.104 79.6123L216.353 84.3271L218.357 89.1689L220.103 94.0967L221.593 99.125L222.812 104.207L223.767 109.355L224.45 114.546L224.86 119.768L224.998 125L224.86 130.231L224.45 135.453L223.767 140.644L222.812 145.792L221.593 150.874L220.103 155.902L218.357 160.83L216.353 165.672L214.104 170.387L211.601 174.999L208.86 179.469L205.897 183.781L202.724 187.917L199.314 191.91L195.709 195.709L191.91 199.314L187.917 202.724L183.781 205.897L179.469 208.86L174.999 211.601L170.387 214.104L165.672 216.353L160.83 218.357L155.902 220.103L150.874 221.593L145.792 222.812L140.644 223.767L135.453 224.45L130.231 224.86L125 224.998L119.768 224.86L114.546 224.45L109.355 223.767L104.207 222.812L99.125 221.593L94.0967 220.103L89.1689 218.357L84.3271 216.353L79.6123 214.104L75 211.601L70.5303 208.86L66.2178 205.897L62.082 202.724L58.0889 199.314L54.29 195.709L50.6846 191.91L47.2754 187.917L44.1016 183.781L41.1387 179.469L38.3984 174.999L35.8945 170.387L33.6465 165.672L31.6416 160.83L29.8965 155.902L28.4062 150.874L27.1865 145.792L26.2324 140.644L25.5488 135.453L25.1387 130.231L25.001 125L25.1387 119.768L25.5488 114.546L26.2324 109.355L27.1865 104.207L28.4062 99.125L29.8965 94.0967L31.6416 89.1689L33.6465 84.3271L35.8945 79.6123L38.3984 75L41.1387 70.5303L44.1016 66.2178L47.2754 62.082L50.6846 58.0889L54.29 54.29L58.0889 50.6846L62.082 47.2754L66.2178 44.1016L70.5303 41.1387L75 38.3984L79.6123 35.8945L84.3271 33.6465L89.1689 31.6416L94.0967 29.8965L99.125 28.4062L104.207 27.1865L109.355 26.2324L114.546 25.5488L119.768 25.1387L125 25.001L130.231 25.1387Z" stroke-width="10" stroke-linecap="round" pathLength="1" />
             <path class="loader" d="M102.299 25.915C115.38 14.7676 134.62 14.7676 147.701 25.915L150.17 28.0186C157.377 34.1606 166.339 37.8727 175.778 38.626L179.011 38.8838C196.144 40.251 209.749 53.8564 211.116 70.9893L211.374 74.2217C212.127 83.6612 215.839 92.6227 221.981 99.8301L224.085 102.299C235.232 115.38 235.232 134.62 224.085 147.701L221.981 150.17C215.839 157.377 212.127 166.339 211.374 175.778L211.116 179.011C209.749 196.144 196.144 209.749 179.011 211.116L175.778 211.374C166.339 212.127 157.377 215.839 150.17 221.981L147.701 224.085C134.62 235.232 115.38 235.232 102.299 224.085L99.8301 221.981C92.6227 215.839 83.6612 212.127 74.2217 211.374L70.9893 211.116C53.8564 209.749 40.251 196.144 38.8838 179.011L38.626 175.778C37.8727 166.339 34.1606 157.377 28.0186 150.17L25.915 147.701C14.7676 134.62 14.7676 115.38 25.915 102.299L28.0186 99.8301C34.1606 92.6227 37.8727 83.6612 38.626 74.2217L38.8838 70.9893C40.251 53.8564 53.8564 40.251 70.9893 38.8838L74.2217 38.626C83.6612 37.8727 92.6227 34.1606 99.8301 28.0186L102.299 25.915Z" stroke-width="10" stroke-linecap="round" pathLength="1" />
           </g>
           <defs>
@@ -358,8 +367,28 @@ async function loadPage(filename) {
       </section>
     </div>
   `;
+  // Start oscillating loader animation
+  const progressEl = document.getElementById('progress');
+  if (progressEl) {
+    progressEl.value = 90;
+    document.documentElement.style.setProperty('--p', '0.9');
+    const loaderInterval = setInterval(() => {
+      if (!document.getElementById('progress')) { clearInterval(loaderInterval); return; }
+      progressEl.value = progressEl.value === 90 ? 10 : 90;
+      document.documentElement.style.setProperty('--p', String(progressEl.value / 100));
+    }, 3500);
+    // Store so we can cancel when page loads
+    markdownContent._loaderInterval = loaderInterval;
+  }
+
   const rawMarkdown = await github.fetchDoc(filename);
   
+  // Clear the loader oscillation interval now that content is ready
+  if (markdownContent._loaderInterval) {
+    clearInterval(markdownContent._loaderInterval);
+    markdownContent._loaderInterval = null;
+  }
+
   if (rawMarkdown === null) {
     renderHome();
   } else {
@@ -390,12 +419,24 @@ async function loadPage(filename) {
       if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
     }
 
+    // Re-measure height when images load inside markdown content
+    markdownContent.querySelectorAll('img').forEach(img => {
+      if (!img.complete) {
+        img.addEventListener('load', () => {
+          _lastSentHeight = 0;
+          sendIframeHeight();
+        });
+      }
+    });
+
     // Ensure we scroll to the top of the newly loaded document
     const contentArea = document.querySelector('.content-area');
-    if (contentArea) contentArea.scrollTo(0, 0);
-
-        _lastSentHeight = 0;
-        sendIframeHeight();
+    _lastSentHeight = 0;
+    sendIframeHeight();
+    setTimeout(() => {
+      _lastSentHeight = 0;
+      sendIframeHeight();
+    }, 100);
   }
 }
 
@@ -756,44 +797,56 @@ function _renderDocNavigation(filename) {
 let _lastSentHeight = 0;
 
 function sendIframeHeight() {
-  if (window.parent && window.parent !== window) {
+  const isIframe = window.parent && window.parent !== window;
+  console.log('[sendIframeHeight] Triggered. Is in iframe:', isIframe);
+
+  if (isIframe) {
+    const header = document.querySelector('.app-bar');
     const markdownNode = document.getElementById('markdown-content');
-    if (!markdownNode) return;
+    const contentArea = document.querySelector('.content-area');
 
-    // #markdown-content is a flex child that gets stretched to sidebar height.
-    // Break flex-stretching temporarily to measure true content height.
-    const prevAlignSelf = markdownNode.style.alignSelf;
-    markdownNode.style.alignSelf = 'flex-start';
-    const markdownHeight = Math.max(markdownNode.offsetHeight, 100);
-    markdownNode.style.alignSelf = prevAlignSelf;
+    const headerH = header ? Math.ceil(header.getBoundingClientRect().height) : 72;
+    const contentH = markdownNode ? Math.max(markdownNode.scrollHeight, Math.ceil(markdownNode.getBoundingClientRect().height)) : 0;
 
-    // Guard: ignore tiny <3px variations to break infinite ResizeObserver loop
-    if (Math.abs(markdownHeight - _lastSentHeight) < 3) {
+    const docHeight = Math.max(headerH + contentH + 32, 200);
+    const diff = Math.abs(docHeight - _lastSentHeight);
+
+    console.log('[sendIframeHeight] Measured:', {
+      headerH,
+      contentH,
+      docHeight,
+      _lastSentHeight,
+      diff
+    });
+
+    if (diff < 3) {
+      console.log('[sendIframeHeight] Ignored (diff < 3px)');
       return;
     }
-    _lastSentHeight = markdownHeight;
+    _lastSentHeight = docHeight;
 
-    const contentArea = document.querySelector('.content-area');
-    const scrollTop = contentArea ? contentArea.scrollTop : window.scrollY;
+    const scrollTop    = contentArea ? contentArea.scrollTop : window.scrollY;
     const clientHeight = contentArea ? contentArea.clientHeight : window.innerHeight;
 
     const payload = {
-      type: 'iframe-height', // exact type specified in GitHub Issue #1
-      action: 'resize',
-      height: markdownHeight,         // Pure markdown height (no menu/wrapper padding loop)
-      scrollHeight: markdownHeight,   // Scroll height of markdown content
-      markdownHeight: markdownHeight,
-      scrollTop: scrollTop,
-      clientHeight: clientHeight,
-      offsetHeight: markdownHeight,
-      windowHeight: window.innerHeight,
-      docHeight: markdownHeight,
-      docScrollHeight: markdownHeight
+      type:           'iframe-height',
+      action:         'resize',
+      height:         docHeight,
+      scrollHeight:   contentH,
+      markdownHeight: contentH,
+      scrollTop:      scrollTop,
+      clientHeight:   clientHeight,
+      offsetHeight:   docHeight,
+      windowHeight:   window.innerHeight,
+      docHeight:      docHeight,
+      docScrollHeight: docHeight
     };
 
+    console.log('[sendIframeHeight] 🚀 Sending postMessage to parent:', payload);
     window.parent.postMessage(payload, '*');
   }
 }
+
 
 /**
  * Sets up listeners and observers to automatically notify parent window of height & scroll changes.

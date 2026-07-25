@@ -329,9 +329,9 @@ md-list-item:focus-visible {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 250px;
+  /* Fill viewport height minus the top app bar so the spinner is truly centered */
+  min-height: calc(100dvh - var(--topbar-h, 72px));
   width: 100%;
-  padding: var(--space-8) 0;
 }
 
 .visually-hidden {

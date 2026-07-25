@@ -8,11 +8,14 @@
    PAGE SHELL
    ───────────────────────────────────────────────────────────────────── */
 body {
+  min-height: 100dvh;
   height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
+
+
 
 /* Wrapper that holds sidebar + content horizontally */
 .layout-body {
@@ -49,6 +52,7 @@ body {
   gap: 0;
   align-items: flex-start;
   min-height: 100%;
+  flex: 1;
 }
 
 /* Article column */
