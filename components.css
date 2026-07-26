@@ -190,6 +190,11 @@ a:focus-visible {
   --md-icon-button-icon-color: var(--md-sys-color-on-surface-variant);
   --md-icon-button-hover-state-layer-color: var(--md-sys-color-on-surface-variant);
 }
+/* Hide in iframe mode */
+html.iframe-mode #theme-toggle,
+.iframe-mode #theme-toggle {
+  display: none !important;
+}
 #theme-toggle:focus-visible {
   outline: 2px solid var(--md-sys-color-primary);
   outline-offset: 2px;
@@ -330,14 +335,43 @@ md-list-item:focus-visible {
   --eps: 0.06;
 }
 
+/* Zero out article padding & force 100% width & height centering when loader is present */
+.content-wrapper:has(.custom-loader-wrapper) {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  justify-content: center !important;
+  min-height: calc(100dvh - var(--topbar-h, 72px)) !important;
+}
+
+.markdown-body:has(.custom-loader-wrapper) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 auto !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  min-height: calc(100dvh - var(--topbar-h, 72px)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
 .custom-loader-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* Fill viewport height minus the top app bar so the spinner is truly centered */
   min-height: calc(100dvh - var(--topbar-h, 72px));
   width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html.iframe-mode .custom-loader-wrapper,
+.iframe-mode .custom-loader-wrapper {
+  min-height: calc(100dvh - var(--topbar-h, 72px)) !important;
 }
 
 .visually-hidden {

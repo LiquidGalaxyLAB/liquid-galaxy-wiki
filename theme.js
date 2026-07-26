@@ -56,9 +56,14 @@ function toggleTheme() {
 function syncIframeTheme() {
   const isIframeParam = window.location.href.indexOf('iframe=true') !== -1;
   let link = document.getElementById('token-dark-stylesheet');
+  const toggle = document.getElementById('theme-toggle');
 
   if (isIframeParam) {
     document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.classList.add('iframe-mode');
+    if (toggle) {
+      toggle.style.display = 'none';
+    }
     if (!link) {
       link = document.createElement('link');
       link.rel = 'stylesheet';
@@ -67,6 +72,9 @@ function syncIframeTheme() {
       document.head.appendChild(link);
     }
   } else {
+    if (toggle) {
+      toggle.style.display = '';
+    }
     if (link) {
       link.remove();
     }
@@ -81,10 +89,15 @@ function syncIframeTheme() {
 document.addEventListener('DOMContentLoaded', () => {
   syncIframeTheme();
   const toggle = document.getElementById('theme-toggle');
+  const isIframeParam = window.location.href.indexOf('iframe=true') !== -1;
   if (toggle) {
-    toggle.addEventListener('click', toggleTheme);
-    // Sync icon to current theme (may have been set by inline script)
-    applyTheme(getCurrentTheme());
+    if (isIframeParam) {
+      toggle.style.display = 'none';
+    } else {
+      toggle.addEventListener('click', toggleTheme);
+      // Sync icon to current theme (may have been set by inline script)
+      applyTheme(getCurrentTheme());
+    }
   }
 });
 

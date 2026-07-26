@@ -285,6 +285,12 @@ body {
     max-width: none;
     padding: 0;
   }
+
+  /* When drawer is collapsed or TOC is hidden, keep markdown-body centered */
+  .drawer.collapsed ~ .content-area .markdown-body,
+  .content-wrapper:has(#toc-sidebar[style*="display: none"]) .markdown-body {
+    margin: 0 auto;
+  }
 }
 
 /* ── MEDIUM DESKTOP: Content with comfortable padding (≥ 960px) ── */

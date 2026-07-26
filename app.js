@@ -266,6 +266,12 @@ function renderHome() {
     });
   }
 
+  const contentArea = document.querySelector('.content-area');
+  if (contentArea) {
+    contentArea.scrollTop = 0;
+  }
+  window.scrollTo(0, 0);
+
   _lastSentHeight = 0;
   sendIframeHeight();
 }
@@ -348,6 +354,15 @@ function parseMarkdown(rawContent) {
 
 // Load a specific markdown page
 async function loadPage(filename) {
+  // Reset scroll to top immediately so loader is centered at top of viewport
+  const contentArea = document.querySelector('.content-area');
+  if (contentArea) {
+    contentArea.scrollTop = 0;
+  }
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+
   markdownContent.innerHTML = `
     <div class="custom-loader-wrapper">
       <section class="custom-loader-section">
@@ -431,6 +446,10 @@ async function loadPage(filename) {
 
     // Ensure we scroll to the top of the newly loaded document
     const contentArea = document.querySelector('.content-area');
+    if (contentArea) {
+      contentArea.scrollTop = 0;
+    }
+    window.scrollTo(0, 0);
     _lastSentHeight = 0;
     sendIframeHeight();
     setTimeout(() => {
@@ -647,9 +666,6 @@ function _updateActiveNav(filename) {
     item.classList.toggle('active', isActive);
     if (isActive) {
       item.setAttribute('aria-current', 'page');
-      setTimeout(() => {
-        item.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }, 100);
     } else {
       item.removeAttribute('aria-current');
     }

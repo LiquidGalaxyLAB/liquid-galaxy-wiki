@@ -142,6 +142,11 @@ html,
   outline: none !important;
 }
 
+/* Hide dark/light mode toggle in iframe mode */
+#theme-toggle {
+  display: none !important;
+}
+
 /* Remove left, top, right, bottom borders & shadows from all main layout containers */
 .layout-body,
 .content-area,
@@ -176,6 +181,27 @@ html,
 .markdown-body {
   padding-top: var(--space-4) !important;
   padding-bottom: var(--space-4) !important;
+}
+
+.content-wrapper:has(.custom-loader-wrapper) {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  justify-content: center !important;
+  min-height: calc(100vh - var(--topbar-h, 72px)) !important;
+}
+
+.markdown-body:has(.custom-loader-wrapper) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 auto !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  min-height: calc(100vh - var(--topbar-h, 72px)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
 /* Header search button */
