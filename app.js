@@ -4,11 +4,11 @@ import { GitHubService } from './github.js';
 
 // Configuration — content is read from the public LiquidGalaxyLAB/lg-wiki-content repo
 const CONTENT_OWNER = 'LiquidGalaxyLAB';
-const CONTENT_REPO  = 'lg-wiki-content';
+const CONTENT_REPO = 'lg-wiki-content';
 
 // PR submissions still go to the same repo
 const owner = CONTENT_OWNER;
-const repo  = CONTENT_REPO;
+const repo = CONTENT_REPO;
 
 const github = new GitHubService(owner, repo);
 
@@ -396,36 +396,58 @@ async function loadPage(filename) {
     markdownContent._loaderInterval = loaderInterval;
   }
 
-  const rawMarkdown = await github.fetchDoc(filename);
-  
+  const pageData = wikiIndex.pages.find(p => p.file === filename);
+  const title = pageData ? pageData.title : filename.replace('.md', '');
+  const titleHtml = `<div class="dynamic-title">${title}</div>`;
+
+  let lastRenderTime = 0;
+  const startTime = performance.now();
+  let firstChunkTime = null;
+
+  // added fetchDocStream to fetch doc stream
+  const rawMarkdown = await github.fetchDocStream(filename, (partialText) => {
+    if (!firstChunkTime) {
+      firstChunkTime = performance.now();
+      console.log(`[Performance] Time to first render (New Way): ${(firstChunkTime - startTime).toFixed(2)} ms`);
+    }
+
+    if (markdownContent._loaderInterval) {
+      clearInterval(markdownContent._loaderInterval);
+      markdownContent._loaderInterval = null;
+    }
+
+    const now = Date.now();
+    if (now - lastRenderTime > 50) {
+      const { content, contributor } = parseMarkdown(partialText);
+      const markdownHtml = marked.parse(content);
+      const creditHtml = `<div class="doc-credit">Credit : ${contributor}</div>`;
+      markdownContent.innerHTML = titleHtml + markdownHtml + creditHtml;
+      lastRenderTime = now;
+    }
+  });
+
   // Clear the loader oscillation interval now that content is ready
   if (markdownContent._loaderInterval) {
     clearInterval(markdownContent._loaderInterval);
     markdownContent._loaderInterval = null;
-  }
 
+  }
   if (rawMarkdown === null) {
     renderHome();
   } else {
     const { content, contributor } = parseMarkdown(rawMarkdown);
-    
-    // Find title from wikiIndex
-    const pageData = wikiIndex.pages.find(p => p.file === filename);
-    const title = pageData ? pageData.title : filename.replace('.md', '');
-
-    const titleHtml = `<div class="dynamic-title">${title}</div>`;
     const markdownHtml = marked.parse(content);
     const creditHtml = `<div class="doc-credit">Credit : ${contributor}</div>`;
 
     markdownContent.innerHTML = titleHtml + markdownHtml + creditHtml;
     attachCopyButtons(markdownContent);
-    
+
     // [DESIGN] Apply active nav state and build TOC (purely visual, no functional impact)
     _currentFile = filename;
     _updateActiveNav(filename);
     _buildTOC();
     _renderDocNavigation(filename);
-    
+
     // Open sidebar automatically when reading a document (on desktop)
     if (window.innerWidth >= 960) {
       const drawerNode = document.getElementById('drawer');
@@ -531,7 +553,6 @@ function setupEventListeners() {
       searchCurrentFocus = -1; // reset focus
       const query = e.target.value.trim().toLowerCase();
       renderSearchResults(query);
-      
       // Typing animation
       if (mdnSearchHeader) {
         mdnSearchHeader.classList.add('is-typing');
@@ -545,7 +566,6 @@ function setupEventListeners() {
     dialogSearchInput.addEventListener('keydown', (e) => {
       const resultsContainer = searchDialogResults;
       if (!resultsContainer) return;
-      
       const items = resultsContainer.querySelectorAll('.mdn-search-result-item');
       if (items.length === 0) return;
 
@@ -579,7 +599,6 @@ function setupEventListeners() {
       activeItem.scrollIntoView({ block: 'nearest' });
     }
   }
-  
   function highlightText(text, query) {
     if (!query) return text;
     const regex = new RegExp(`(${query})`, 'gi');
@@ -589,13 +608,12 @@ function setupEventListeners() {
   // Render results in the dialog
   function renderSearchResults(query) {
     if (!searchDialogResults) return;
-    
     if (!query) {
       searchDialogResults.innerHTML = '<div class="search-empty">Type to start searching...</div>';
       return;
     }
 
-    const filtered = wikiIndex.pages.filter(page => 
+    const filtered = wikiIndex.pages.filter(page =>
       page.title.toLowerCase().includes(query) || page.file.toLowerCase().includes(query)
     );
 
@@ -606,7 +624,7 @@ function setupEventListeners() {
 
     const html = filtered.map(page => `
       <div class="mdn-search-result-item" data-file="${page.file}" tabindex="0" role="button">
-        <div class="mdn-search-result-breadcrumb">Liquid Galaxy / ${highlightText(page.file.replace('.md',''), query)}</div>
+        <div class="mdn-search-result-breadcrumb">Liquid Galaxy / ${highlightText(page.file.replace('.md', ''), query)}</div>
         <div class="mdn-search-result-title">${highlightText(page.title, query)}</div>
       </div>
     `).join('');
@@ -841,20 +859,20 @@ function sendIframeHeight() {
     }
     _lastSentHeight = docHeight;
 
-    const scrollTop    = contentArea ? contentArea.scrollTop : window.scrollY;
+    const scrollTop = contentArea ? contentArea.scrollTop : window.scrollY;
     const clientHeight = contentArea ? contentArea.clientHeight : window.innerHeight;
 
     const payload = {
-      type:           'iframe-height',
-      action:         'resize',
-      height:         docHeight,
-      scrollHeight:   contentH,
+      type: 'iframe-height',
+      action: 'resize',
+      height: docHeight,
+      scrollHeight: contentH,
       markdownHeight: contentH,
-      scrollTop:      scrollTop,
-      clientHeight:   clientHeight,
-      offsetHeight:   docHeight,
-      windowHeight:   window.innerHeight,
-      docHeight:      docHeight,
+      scrollTop: scrollTop,
+      clientHeight: clientHeight,
+      offsetHeight: docHeight,
+      windowHeight: window.innerHeight,
+      docHeight: docHeight,
       docScrollHeight: docHeight
     };
 
