@@ -62,20 +62,31 @@ export class GitHubService {
       const res = await fetch(`${RAW_BASE}/content/${filename}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let done = false;
-      let text = "";
-      
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-        if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          text += chunk;
-          if (onChunk) onChunk(text);
+      if (res.body && typeof res.body.getReader === 'function') {
+        try {
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder("utf-8");
+          let done = false;
+          let text = "";
+          
+          while (!done) {
+            const { value, done: readerDone } = await reader.read();
+            done = readerDone;
+            if (value) {
+              const chunk = decoder.decode(value, { stream: true });
+              text += chunk;
+              if (onChunk) onChunk(text);
+            }
+          }
+          return text;
+        } catch (streamErr) {
+          console.warn(`Stream reading failed for ${filename}, falling back to res.text():`, streamErr.message);
         }
       }
+
+      // Fallback for older browsers without ReadableStream support or if stream reading fails
+      const text = await res.text();
+      if (onChunk) onChunk(text);
       return text;
     } catch (e) {
       console.warn(`Could not fetch stream ${filename}:`, e.message);
