@@ -53,6 +53,36 @@ export class GitHubService {
     return null;
   }
 
+  /**
+   * Fetches a specific markdown file from the public lg-wiki-content repo as a stream.
+   * Calls onChunk with the accumulated text as it downloads.
+   */
+  async fetchDocStream(filename, onChunk) {
+    try {
+      const res = await fetch(`${RAW_BASE}/content/${filename}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+      let text = "";
+      
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          text += chunk;
+          if (onChunk) onChunk(text);
+        }
+      }
+      return text;
+    } catch (e) {
+      console.warn(`Could not fetch stream ${filename}:`, e.message);
+    }
+    return null;
+  }
+
   async submitPR(title, filename, markdownContent, pendingImages, contributorEmail) {
     if (!this.token) throw new Error("GitHub token is required to submit a PR.");
     
