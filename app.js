@@ -77,29 +77,6 @@ function renderNav(pages) {
     navList.appendChild(item);
   });
 
-  // Inject the Contribute link
-  const hr = document.createElement('hr');
-  hr.style.margin = '16px 0';
-  hr.style.border = 'none';
-  hr.style.borderTop = '1px solid var(--md-sys-color-outline-variant)';
-  navList.appendChild(hr);
-
-  const contributeItem = document.createElement('md-list-item');
-  contributeItem.innerHTML = `
-    <span slot="start" class="material-icons" style="color: var(--md-sys-color-primary);">edit_note</span>
-    How to Contribute
-  `;
-  contributeItem.type = 'button';
-  contributeItem.addEventListener('click', () => {
-    window.location.hash = 'how-to-contribute-to-lg-wiki.md';
-    loadPage('how-to-contribute-to-lg-wiki.md');
-    // Collapse drawer on smaller screens
-    if (window.innerWidth < 960) {
-      drawer.classList.add('collapsed');
-    }
-  });
-  navList.appendChild(contributeItem);
-
   // Re-apply active state after re-render (e.g. after search filter)
   if (_currentFile) _updateActiveNav(_currentFile);
 }
@@ -128,8 +105,19 @@ function renderHome() {
   const tocSidebar = document.getElementById('toc-sidebar');
   if (tocSidebar) tocSidebar.style.display = 'none';
 
-  // Get Top 5 recent entries (assuming latest added are at the end of the array)
-  const recentEntries = (wikiIndex.pages || []).slice(-5).reverse();
+  const pages = wikiIndex.pages || [];
+
+  // index.json is hand-ordered; its first entries are the intended starting points
+  const startHtml = pages.slice(0, 3).map((page, i) => `
+    <div class="start-card" data-file="${page.file}" role="button" tabindex="0" aria-label="${page.title}">
+      <span class="start-card-num">0${i + 1}</span>
+      <span class="start-card-title">${page.title}</span>
+      <span class="start-card-hint">Start reading <span aria-hidden="true">&rarr;</span></span>
+    </div>
+  `).join('');
+
+  // No date field in index.json; newest entries are appended, so take the tail
+  const recentEntries = pages.slice(-5).reverse();
   const recentHtml = recentEntries.map(page => `
     <div class="recent-doc-item" onclick="window.location.hash='${page.file}'" role="button" tabindex="0">
       <span class="material-icons">article</span>
@@ -139,24 +127,52 @@ function renderHome() {
 
   markdownContent.innerHTML = `
     <div class="home-hero">
-      <div class="lg-badge">
+      <div class="cosmos" aria-hidden="true">
+        <div class="cosmos-stars"></div>
+        <div class="cosmos-stars cosmos-stars--far"></div>
+        <div class="cosmos-nebula"></div>
+        <div class="cosmos-planet"></div>
+      </div>
+      <a class="lg-badge" href="https://www.liquidgalaxy.eu/" target="_blank" rel="noopener noreferrer" aria-label="Visit the official Liquid Galaxy website (opens in new tab)">
         <span class="material-icons" style="font-size:16px;">public</span>
         Liquid Galaxy Project
-      </div>
+      </a>
       <h1>Explore Liquid Galaxy</h1>
-      <p>Welcome to LG Wiki! Discover clear documentation, implementation guides, and architectural insights for the Liquid Galaxy project — your go-to resource for both beginners and enthusiasts.</p>
+      <p>Welcome to LG Wiki! Discover clear documentation, implementation guides, and architectural insights for the Liquid Galaxy project. Your go-to resource for beginners and enthusiasts alike.</p>
       <div class="hero-search-container">
         <button id="hero-search-overlay" class="hero-search-btn" aria-label="Search documentation">
-          <span class="material-icons search-icon">search</span>
+          <img src="public/assets/searchbar.svg" class="search-icon" alt="" width="22" height="22">
           <span class="search-placeholder">Search documentation...</span>
           <span class="search-shortcut">/</span>
         </button>
       </div>
     </div>
 
-    <!-- 5 Recent Wiki Entries -->
+    <!-- Start here -->
     <div class="home-section">
-      <h2 class="section-title">Recently Added Documentation</h2>
+      <h2 class="section-title">Start here</h2>
+      <div class="start-grid">
+        ${startHtml || '<p>No entries found.</p>'}
+      </div>
+    </div>
+
+    <!-- All guides -->
+    <div class="home-section browse-section">
+      <div class="browse-header">
+        <h2 class="section-title">All guides</h2>
+        <button id="browse-toggle" class="browse-toggle" aria-expanded="false" aria-controls="home-doc-grid">
+          Browse all ${pages.length} guides
+          <span class="material-icons" aria-hidden="true">expand_more</span>
+        </button>
+      </div>
+      <div class="home-doc-grid-wrap">
+        <div id="home-doc-grid" class="home-doc-grid" role="list"></div>
+      </div>
+    </div>
+
+    <!-- Recently added -->
+    <div class="home-section">
+      <h2 class="section-title">Recently added</h2>
       <div class="recent-docs-grid">
         ${recentHtml || '<p>No entries found.</p>'}
       </div>
@@ -191,18 +207,24 @@ function renderHome() {
     </div>
     -->
 
-    <!-- CTA Section at the end -->
+    <!-- Contribute -->
     <div class="home-cta-section">
-      <h2>Ready to Dive In?</h2>
-      <p>Join our global open-source community. Explore apps on the store or contribute your own documentation.</p>
+      <h2>Contribute to the wiki</h2>
+      <p>Fixed a rig problem worth sharing? Spotted a gap in a guide? Add your knowledge to the community wiki.</p>
       <div class="home-cta-buttons">
-        <button class="cta-primary" id="home-docs-btn">
-          <span class="material-icons">menu_book</span> Read Documentation
-        </button>
-        <button class="cta-secondary" id="home-contribute-btn">
+        <button class="cta-primary" id="home-contribute-btn">
           <span class="material-icons">edit_note</span> How to Contribute
         </button>
-        <a class="cta-secondary" href="https://store.liquidgalaxy.eu" target="_blank">
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="home-footer">
+      <p>&copy; Liquid Galaxy Project &middot; built by the open-source community</p>
+      <nav class="home-footer-links" aria-label="Liquid Galaxy ecosystem">
+        <a href="https://www.liquidgalaxy.eu/" target="_blank" rel="noopener noreferrer">liquidgalaxy.eu</a>
+        <a href="https://github.com/LiquidGalaxyLAB/lg-wiki-content" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a class="go-store-link" href="https://store.liquidgalaxy.eu" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 68 32" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path class="earth" d="M46.3449 19.1259C41.2313 12.3618 35.9813 17.5018 37.3517 22.2293C40.7988 29.7671 49.705 33.0839 57.2443 29.6374C59.8429 28.4494 62.0485 26.5445 63.6017 24.1466C59.6489 27.8482 52.471 27.2295 46.3449 19.1259Z" fill="#255FDB"></path>
             <path class="earth" d="M50.9165 14.4683C43.8835 3.8032 36 9.4868 36 16.0021C35.9972 18.1598 36.4624 20.2926 37.3636 22.2532C36.4279 17.8375 41.5023 14.4325 46.2273 20.7705C53.0881 29.9733 59.821 28.3543 63.5881 24.167C64.7979 22.3102 65.5792 20.2075 65.8756 18.0114V18.0403C64.2579 23.0576 57.1193 23.8739 50.9165 14.4683Z" fill="#4285F4"></path>
@@ -225,40 +247,38 @@ function renderHome() {
                 <rect width="30" height="30" fill="white" transform="translate(36 1)"></rect>
               </clipPath>
             </defs>
-          </svg> Visit GO Store
+          </svg> GO Store
         </a>
-      </div>
-    </div>
+      </nav>
+    </footer>
   `;
 
-  // Bind documentation reading CTA buttons
-  const navigateToFirstDoc = () => {
-    const firstPage = wikiIndex.pages && wikiIndex.pages.length > 0 ? wikiIndex.pages[0] : null;
-    if (firstPage) {
-      window.location.hash = firstPage.file;
-    } else {
-      window.location.hash = 'how-to-contribute-to-lg-wiki.md';
-    }
-  };
+  markdownContent.querySelectorAll('.start-card').forEach(card => {
+    const navigate = () => {
+      window.location.hash = card.dataset.file;
+      if (window.innerWidth < 960) drawer.classList.add('collapsed');
+    };
+    card.addEventListener('click', navigate);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(); }
+    });
+  });
 
-  const heroDocsBtn = document.getElementById('hero-docs-btn');
-  if (heroDocsBtn) {
-    heroDocsBtn.addEventListener('click', navigateToFirstDoc);
-  }
-
-  const heroContributeBtn = document.getElementById('hero-contribute-btn');
-  if (heroContributeBtn) {
-    heroContributeBtn.addEventListener('click', () => {
-      window.location.hash = 'how-to-contribute-to-lg-wiki.md';
+  const browseToggle = document.getElementById('browse-toggle');
+  const docGridWrap = markdownContent.querySelector('.home-doc-grid-wrap');
+  if (browseToggle && docGridWrap) {
+    browseToggle.addEventListener('click', () => {
+      const opening = !docGridWrap.classList.contains('open');
+      if (opening && !docGridWrap.dataset.built) {
+        _renderDocGrid();
+        docGridWrap.dataset.built = '1';
+      }
+      docGridWrap.classList.toggle('open', opening);
+      browseToggle.classList.toggle('expanded', opening);
+      browseToggle.setAttribute('aria-expanded', String(opening));
     });
   }
 
-  const homeDocsBtn = document.getElementById('home-docs-btn');
-  if (homeDocsBtn) {
-    homeDocsBtn.addEventListener('click', navigateToFirstDoc);
-  }
-
-  // Bind the contribute button
   const ctaBtn = document.getElementById('home-contribute-btn');
   if (ctaBtn) {
     ctaBtn.addEventListener('click', () => {
@@ -329,6 +349,10 @@ function _renderDocGrid() {
 }
 
 
+
+function _bylineHtml(contributor) {
+  return `<div class="doc-byline"><span class="material-icons" aria-hidden="true">person</span>Contributed by ${contributor}</div>`;
+}
 
 // Parse markdown frontmatter
 function parseMarkdown(rawContent) {
@@ -420,8 +444,7 @@ async function loadPage(filename) {
     if (now - lastRenderTime > 50) {
       const { content, contributor } = parseMarkdown(partialText);
       const markdownHtml = marked.parse(content);
-      const creditHtml = `<div class="doc-credit">Credit : ${contributor}</div>`;
-      markdownContent.innerHTML = titleHtml + markdownHtml + creditHtml;
+      markdownContent.innerHTML = titleHtml + _bylineHtml(contributor) + markdownHtml;
       lastRenderTime = now;
     }
   });
@@ -437,10 +460,14 @@ async function loadPage(filename) {
   } else {
     const { content, contributor } = parseMarkdown(rawMarkdown);
     const markdownHtml = marked.parse(content);
-    const creditHtml = `<div class="doc-credit">Credit : ${contributor}</div>`;
 
-    markdownContent.innerHTML = titleHtml + markdownHtml + creditHtml;
+    markdownContent.innerHTML = titleHtml + _bylineHtml(contributor) + markdownHtml;
     attachCopyButtons(markdownContent);
+
+    // Reflow between remove/add restarts the animation on each navigation
+    markdownContent.classList.remove('article-enter');
+    void markdownContent.offsetWidth;
+    markdownContent.classList.add('article-enter');
 
     // [DESIGN] Apply active nav state and build TOC (purely visual, no functional impact)
     _currentFile = filename;
@@ -483,6 +510,17 @@ async function loadPage(filename) {
 
 // Setup Event Listeners — unchanged
 function setupEventListeners() {
+  const drawerContribute = document.getElementById('drawer-contribute');
+  if (drawerContribute) {
+    drawerContribute.addEventListener('click', () => {
+      window.location.hash = 'how-to-contribute-to-lg-wiki.md';
+      loadPage('how-to-contribute-to-lg-wiki.md');
+      if (window.innerWidth < 960) {
+        drawer.classList.add('collapsed');
+      }
+    });
+  }
+
   // Toggle Drawer
   menuToggle.addEventListener('click', () => {
     const isNowOpen = drawer.classList.toggle('collapsed');
@@ -495,11 +533,21 @@ function setupEventListeners() {
 
   // --- MDN-Style Search Functionality ---
 
-  const openSearch = () => {
+  const setSearchOrigin = (trigger) => {
+    const content = searchDialog?.querySelector('.mdn-search-content');
+    if (!content) return;
+    if (!trigger) { content.style.transformOrigin = ''; return; }
+    const t = trigger.getBoundingClientRect();
+    const c = content.getBoundingClientRect();
+    content.style.transformOrigin =
+      `${t.left + t.width / 2 - c.left}px ${t.top + t.height / 2 - c.top}px`;
+  };
+
+  const openSearch = (trigger) => {
     if (searchDialog) {
+      setSearchOrigin(trigger);
       searchDialog.classList.add('active');
-      // Small delay to ensure dialog is rendered before focusing
-      setTimeout(() => dialogSearchInput?.focus(), 100);
+      requestAnimationFrame(() => dialogSearchInput?.focus());
       renderSearchResults(''); // Show initial state
     }
   };
@@ -511,7 +559,7 @@ function setupEventListeners() {
     }
   };
 
-  if (headerSearchBtn) headerSearchBtn.addEventListener('click', openSearch);
+  if (headerSearchBtn) headerSearchBtn.addEventListener('click', () => openSearch(headerSearchBtn));
   if (closeSearchBtn) closeSearchBtn.addEventListener('click', closeSearch);
 
   // Close when clicking outside the modal content (on the backdrop)
@@ -527,7 +575,7 @@ function setupEventListeners() {
   document.addEventListener('keydown', (e) => {
     if (e.key === '/' && document.activeElement !== dialogSearchInput && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
       e.preventDefault();
-      openSearch();
+      openSearch(headerSearchBtn);
     }
     // Escape to close
     if (e.key === 'Escape') {
@@ -539,7 +587,7 @@ function setupEventListeners() {
   document.addEventListener('click', (e) => {
     const heroSearchOverlay = e.target.closest('#hero-search-overlay');
     if (heroSearchOverlay) {
-      openSearch();
+      openSearch(heroSearchOverlay);
     }
   });
 
@@ -688,6 +736,17 @@ function _updateActiveNav(filename) {
       item.removeAttribute('aria-current');
     }
   });
+
+  const drawerContribute = document.getElementById('drawer-contribute');
+  if (drawerContribute) {
+    const isActive = filename === 'how-to-contribute-to-lg-wiki.md';
+    drawerContribute.classList.toggle('active', isActive);
+    if (isActive) {
+      drawerContribute.setAttribute('aria-current', 'page');
+    } else {
+      drawerContribute.removeAttribute('aria-current');
+    }
+  }
 }
 
 
@@ -728,8 +787,15 @@ function _buildTOC() {
     }
   });
 
-  // Build TOC markup
-  tocNav.innerHTML = '<p class="toc-heading" aria-hidden="true">On this page</p>';
+  // Heading is a button so mobile can collapse the list; CSS keeps it open on desktop
+  tocNav.innerHTML = '';
+  const tocToggle = document.createElement('button');
+  tocToggle.type = 'button';
+  tocToggle.className = 'toc-heading';
+  tocToggle.setAttribute('aria-expanded', 'false');
+  tocToggle.innerHTML = `On this page<span class="material-icons" aria-hidden="true">expand_more</span>`;
+  tocNav.appendChild(tocToggle);
+
   const list = document.createElement('ul');
   list.className = 'toc-list';
   list.setAttribute('role', 'list');
@@ -747,8 +813,24 @@ function _buildTOC() {
     list.appendChild(li);
   });
 
-  tocNav.appendChild(list);
+  // Single child for the mobile 0fr/1fr row collapse
+  const listWrap = document.createElement('div');
+  listWrap.className = 'toc-list-wrap';
+  listWrap.appendChild(list);
+  tocNav.appendChild(listWrap);
   tocSidebar.style.display = '';
+
+  tocToggle.addEventListener('click', () => {
+    const open = tocNav.classList.toggle('open');
+    tocToggle.setAttribute('aria-expanded', String(open));
+  });
+
+  list.addEventListener('click', (e) => {
+    if (e.target.closest('.toc-link') && window.innerWidth < 1280) {
+      tocNav.classList.remove('open');
+      tocToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
 
   // IntersectionObserver to highlight active section
   const contentArea = document.querySelector('.content-area');

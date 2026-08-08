@@ -6,7 +6,7 @@
 //    • Google Fonts / CDN assets  → Cache-First (stale-while-revalidate)
 // ═══════════════════════════════════════════════════════════════════════════
 
-const CACHE_VERSION = 'lg-wiki-v5';
+const CACHE_VERSION = 'lg-wiki-v6';
 const SHELL_CACHE   = `${CACHE_VERSION}-shell`;
 const CONTENT_CACHE = `${CACHE_VERSION}-content`;
 const CDN_CACHE     = `${CACHE_VERSION}-cdn`;
@@ -141,7 +141,9 @@ async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
 
   try {
-    const networkResponse = await fetch(request);
+    // Revalidate: without this, a heuristically-cached response satisfies the
+    // fetch and network-first silently serves stale assets.
+    const networkResponse = await fetch(request, { cache: 'no-cache' });
     if (networkResponse.ok) {
       cache.put(request, networkResponse.clone());
     }

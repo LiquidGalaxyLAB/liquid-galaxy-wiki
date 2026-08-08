@@ -67,7 +67,7 @@ body {
 /* TOC column — right gutter, only shown on wide screens */
 .toc-sidebar {
   display: none; /* shown via media query below */
-  padding-top: var(--space-16);
+  padding-top: calc(var(--topbar-h) + var(--space-8));
   padding-right: var(--space-6);
 }
 
@@ -117,21 +117,32 @@ body {
   opacity: 1;
 }
 
-/* Lightbox styles */
+/* Laid out at all times so it can animate out as well as in */
 .lightbox {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: color-mix(in srgb, var(--md-sys-color-scrim) 85%, transparent);
   z-index: 10000;
-  display: none;
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(5px);
   cursor: zoom-out;
+  transition:
+    opacity var(--md-sys-motion-duration-short-3) var(--md-sys-motion-easing-emphasized-accel),
+    visibility 0s linear var(--md-sys-motion-duration-short-3);
 }
 
 .lightbox.active {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity var(--md-sys-motion-duration-medium-1) var(--md-sys-motion-easing-emphasized-decel),
+    visibility 0s linear 0s;
 }
 
 .lightbox img {
@@ -141,6 +152,25 @@ body {
   /* border-radius: var(--md-sys-shape-corner-large); */
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
   cursor: default;
+  /* transform-origin is set in markdown-setup.js */
+  transform: scale(0.94);
+  transition: transform var(--md-sys-motion-duration-short-3)
+              var(--md-sys-motion-easing-emphasized-accel);
+  will-change: transform;
+}
+
+.lightbox.active img {
+  transform: scale(1);
+  transition: transform var(--md-sys-motion-duration-medium-1)
+              var(--md-sys-motion-easing-emphasized-decel);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox img,
+  .lightbox.active img {
+    transform: none;
+    transition: none;
+  }
 }
 
 .markdown-body pre code {
@@ -148,13 +178,29 @@ body {
   padding: 0;
   border-radius: 0;
   font-size: inherit;
-  color: inherit;
+  /* Not `inherit`: blocks are always dark, the page text colour is not */
+  color: #e2e2e2;
 }
 
 /* Code Block Copy Button */
 .code-block-wrapper {
   position: relative;
   margin-bottom: var(--space-4);
+}
+
+/* data-lang is set by attachCopyButtons */
+.code-block-wrapper[data-lang]::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 7px;
+  left: 14px;
+  font-family: var(--md-sys-typescale-font-family-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
 }
 
 .code-block-wrapper pre {
@@ -176,11 +222,45 @@ body {
   justify-content: center;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.2s, background 0.2s, color 0.2s;
+  transition: opacity 0.2s, background 0.2s, color 0.2s,
+              transform var(--md-sys-motion-duration-short-2) var(--md-sys-motion-easing-standard);
 }
 
-.code-block-wrapper:hover .copy-code-btn {
+.copy-code-btn:active {
+  transform: scale(0.92);
+  transition-duration: 80ms;
+}
+
+/* The icon element is replaced on copy, so this runs on each insert */
+.copy-code-btn .material-icons {
+  animation: copyIconPop var(--md-sys-motion-duration-short-2)
+             var(--md-sys-motion-easing-emphasized-decel);
+}
+
+@keyframes copyIconPop {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Reveal-on-hover is pointer-only; on touch the button must always be visible */
+@media (hover: hover) and (pointer: fine) {
+  .code-block-wrapper:hover .copy-code-btn {
+    opacity: 1;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .copy-code-btn {
+    opacity: 1;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.copy-code-btn:focus-visible {
   opacity: 1;
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
 }
 
 .copy-code-btn:hover {
@@ -198,19 +278,47 @@ body {
   font-size: 18px;
 }
 
+/* One gutter token drives every section below the hero; override --home-gutter only */
 .markdown-body:has(.home-hero) {
+  --home-gutter: var(--space-6);
+  --home-col: 1100px;
   max-width: none;
   margin: 0;
   padding: 0;
 }
 
-/* Homepage inner content constraint (cards, divider) */
+/* :has() (0,2,0) outranks the breakpoint padding below (0,1,0) */
+.content-wrapper:has(.home-hero) {
+  max-width: none;
+  padding: 0;
+}
+
+/* Article pages clear the fixed bar; the hero runs beneath it deliberately */
+.markdown-body:not(:has(.home-hero)) {
+  padding-top: calc(var(--topbar-h) + var(--space-8));
+}
+
+/* Content box is (col - 2*gutter): the shared alignment line */
 .home-hero ~ * {
-  max-width: 1100px;
+  max-width: var(--home-col);
   margin-left: auto;
   margin-right: auto;
-  padding-left: var(--space-6);
-  padding-right: var(--space-6);
+  padding-left: var(--home-gutter);
+  padding-right: var(--home-gutter);
+}
+
+/* These own a background/border, so their border box must match that line */
+.home-hero ~ .home-cta-section,
+.home-hero ~ .home-footer {
+  max-width: min(
+    calc(var(--home-col) - 2 * var(--home-gutter)),
+    calc(100% - 2 * var(--home-gutter))
+  );
+}
+
+.home-hero ~ .home-footer {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* The hero itself is full-width */
@@ -280,11 +388,7 @@ body {
     display: block;
   }
 
-  /* Homepage: disable the centering constraints (needs full width) */
-  .markdown-body:has(.home-hero) .content-wrapper {
-    max-width: none;
-    padding: 0;
-  }
+  /* (Homepage full-bleed rule is global — see HOMEPAGE SPECIAL LAYOUT above) */
 
   /* When drawer is collapsed or TOC is hidden, keep markdown-body centered */
   .drawer.collapsed ~ .content-area .markdown-body,
@@ -314,10 +418,23 @@ body {
     height: calc(100dvh - var(--topbar-h));
     z-index: 180;
     box-shadow: var(--md-sys-elevation-shadow-5);
+    /* Overlay drawer = real material here: content actually sits behind it
+       (on desktop it's a side-by-side panel, so it stays a tonal surface) */
+    background: color-mix(in srgb, var(--md-sys-color-surface-container-low) 82%, transparent);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     /* Hidden by default on mobile */
     transform: translateX(-100%);
     /* Override collapsed so width stays for the animation */
     width: var(--sidebar-w) !important;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .drawer {
+      background: var(--md-sys-color-surface-container-low);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
   }
 
   /* When drawer is open on mobile (NOT collapsed) */
@@ -358,7 +475,7 @@ body {
   }
 
   .content-wrapper {
-    padding: 0 var(--space-3);
+      padding: 0 var(--space-4);
   }
 
   .markdown-body {
@@ -371,13 +488,51 @@ body {
   }
 
   .home-hero {
-    /* Keep bottom padding: the 3px 4-color stripe ::after sits at the very edge */
-    padding: var(--space-8) var(--space-4) var(--space-8);
+    /* Keep bottom padding: the 3px 4-color stripe ::after sits at the very edge.
+       Top clears the fixed glass bar. */
+    padding: calc(var(--topbar-h) + var(--space-4)) var(--space-4) var(--space-8);
   }
 
-  .home-hero ~ * {
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
+  .markdown-body:has(.home-hero) {
+    --home-gutter: var(--space-4);
+  }
+
+  .home-hero {
+    min-height: auto;
+  }
+
+  .home-hero h1 {
+    font-size: clamp(2.1rem, 8.5vw, 2.75rem);
+  }
+
+  .home-hero p {
+    font-size: 1rem;
+  }
+
+  .browse-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .browse-toggle {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+  }
+
+  .home-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+
+  .home-cta-section {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .home-section {
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-6);
   }
 
   .home-cards {
@@ -389,6 +544,145 @@ body {
     justify-content: center;
     text-align: center;
   }
+
+  /* ── DOCUMENTATION PAGES ON MOBILE ────────────────────────────────── */
+
+  .markdown-body pre {
+    padding: var(--space-4) var(--space-3);
+    border-radius: 8px;
+    margin-left: calc(-1 * var(--space-2));
+    margin-right: calc(-1 * var(--space-2));
+  }
+
+  .markdown-body pre code {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+
+  .code-block-wrapper[data-lang]::before {
+    top: 5px;
+    left: 10px;
+  }
+
+  .doc-navigation {
+    flex-direction: column;
+  }
+
+  .markdown-body table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .markdown-body p,
+  .markdown-body li,
+  .markdown-body a,
+  .markdown-body code {
+    overflow-wrap: anywhere;
+  }
+
+  .dynamic-title {
+    font-size: clamp(1.75rem, 7.5vw, 2.25rem);
+  }
+}
+
+
+/* ── TOC as a collapsible panel below 1280px (no gutter to live in) ── */
+@media (max-width: 1279px) {
+  /* On the wrapper so it holds whether or not a TOC was built */
+  .content-wrapper {
+    flex-direction: column;
+    /* In a column, flex-start would size children to content and let
+       .markdown-body's max-width win, overflowing narrow viewports. */
+    align-items: stretch;
+    padding-top: calc(var(--topbar-h) + var(--space-4));
+  }
+
+  .markdown-body:not(:has(.home-hero)) {
+    padding-top: 0;
+  }
+
+  .markdown-body {
+    max-width: 100%;
+  }
+
+  .toc-sidebar {
+    display: block;
+    order: -1;
+    width: 100%;
+    padding: 0;
+    margin-bottom: var(--space-5);
+    position: static;
+  }
+
+  #toc-nav {
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    background: var(--md-sys-color-surface-container-low);
+    overflow: hidden;
+  }
+
+  .toc-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-height: 48px;
+    margin: 0;
+    padding: 0 var(--space-4);
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .toc-heading .material-icons {
+    display: block;
+    font-size: 20px;
+    color: var(--md-sys-color-on-surface-variant);
+    transition: transform var(--md-sys-motion-duration-medium-2)
+                var(--md-sys-motion-easing-emphasized);
+  }
+
+  #toc-nav.open .toc-heading .material-icons {
+    transform: rotate(180deg);
+  }
+
+  .toc-heading:active {
+    background: var(--md-sys-color-surface-container-high);
+  }
+
+  /* The row collapses a single child, so the <ul> is wrapped: collapsing the
+     <li>s directly would give each its own row and never reach zero height. */
+  .toc-list-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--md-sys-motion-duration-medium-3)
+                var(--md-sys-motion-easing-emphasized);
+  }
+
+  #toc-nav.open .toc-list-wrap {
+    grid-template-rows: 1fr;
+  }
+
+  .toc-list {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .toc-link {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toc-list,
+    .toc-heading .material-icons {
+      transition: none;
+    }
+  }
 }
 
 
@@ -399,5 +693,13 @@ body {
   }
   .brand h1 {
     display: none;
+  }
+}
+
+
+/* < 360px, not < 400px: 375 and 390 are common phone widths and keep the full gutter */
+@media (max-width: 359px) {
+  .markdown-body:has(.home-hero) {
+    --home-gutter: var(--space-3);
   }
 }
