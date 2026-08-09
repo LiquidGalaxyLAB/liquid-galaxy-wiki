@@ -38,30 +38,43 @@ a:focus-visible {
 /* ─────────────────────────────────────────────────────────────────────
    HEADER / TOP APP BAR
    ───────────────────────────────────────────────────────────────────── */
+/* Floating glass toolbar; content scrolls beneath it */
 .app-bar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 200;
   height: var(--topbar-h);
   display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: 0 var(--space-5);
-  /* Calm, barely-differentiated from body — surface-container-low reads as one plane */
-  background: var(--md-sys-color-surface-container-low);
-  /* Faint hairline only — prefer tonal surface over strong border jump */
-  border-bottom: 1px solid var(--md-sys-color-outline-variant);
-  box-shadow: var(--md-sys-elevation-shadow-0);
+  background: color-mix(in srgb, var(--md-sys-color-surface) 70%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: none;
+  box-shadow: none;
   transition:
     box-shadow var(--md-sys-motion-duration-short-4) var(--md-sys-motion-easing-standard),
     background var(--md-sys-motion-duration-short-4) var(--md-sys-motion-easing-standard);
   flex-shrink: 0;
 }
 
-/* Elevation added on scroll via JS .scrolled class */
+/* Hairline appears only once content passes underneath */
 .app-bar.scrolled {
-  box-shadow: var(--md-sys-elevation-shadow-2);
-  background: var(--md-sys-color-surface-container);
+  background: color-mix(in srgb, var(--md-sys-color-surface) 82%, transparent);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent),
+    0 8px 24px -16px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .app-bar {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--md-sys-color-surface);
+  }
 }
 
 /* Brand */
@@ -98,19 +111,32 @@ a:focus-visible {
   letter-spacing: -0.5px;
 }
 
+/* Wordmark — same typeface as the hero; weight carries the hierarchy */
 .brand h1 {
   margin: 0;
-  font-family: 'Roboto', sans-serif;
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
-  font-weight: 400;
-  line-height: var(--md-sys-typescale-title-medium-line-height);
-  letter-spacing: var(--md-sys-typescale-title-medium-tracking);
+  font-family: var(--md-sys-typescale-font-family-brand);
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
   color: var(--md-sys-color-on-surface);
   white-space: nowrap;
+  font-optical-sizing: auto;
 }
+
+/* 700 is the heaviest Inter cut loaded (see the font link in index.html) */
 .brand h1 span {
   color: var(--md-sys-color-primary);
-  font-weight: 500;
+  font-weight: 700;
+}
+
+a.brand:hover h1 {
+  text-decoration: none;
+}
+
+a.brand:active {
+  transform: scale(0.98);
+  transition: transform 0.08s ease-out;
 }
 
 /* Search (MDN Style) */
@@ -229,6 +255,7 @@ md-filled-button {
 /* ─────────────────────────────────────────────────────────────────────
    SIDEBAR / NAVIGATION DRAWER
    ───────────────────────────────────────────────────────────────────── */
+/* The nav owns the scroll, not the drawer, so the footer stays pinned */
 .drawer {
   width: var(--sidebar-w);
   height: calc(100dvh - var(--topbar-h, 72px));
@@ -236,18 +263,78 @@ md-filled-button {
   position: sticky;
   top: var(--topbar-h, 72px);
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--md-sys-color-surface-container-low);
   /* No right-side divider line — tonal surface differentiation only */
   border-right: none;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--md-sys-color-outline-variant) transparent;
+  overflow: hidden;
   transition:
     transform   var(--md-sys-motion-duration-medium-2) var(--md-sys-motion-easing-emphasized),
     width       var(--md-sys-motion-duration-medium-2) var(--md-sys-motion-easing-emphasized),
     box-shadow  var(--md-sys-motion-duration-short-4) var(--md-sys-motion-easing-standard);
   will-change: transform;
+}
+
+.drawer nav {
+  flex: 1 1 auto;
+  min-height: 0; /* flex children refuse to shrink without this */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-sys-color-outline-variant) transparent;
+}
+
+.drawer-footer {
+  flex-shrink: 0;
+  padding: var(--space-2) var(--space-2);
+  border-top: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent);
+}
+
+.drawer-contribute {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 48px;
+  padding: 10px var(--space-4);
+  border: none;
+  border-radius: var(--md-sys-shape-corner-small);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: inherit;
+  font-size: var(--md-sys-typescale-body-medium-size);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background var(--md-sys-motion-duration-short-3) var(--md-sys-motion-easing-standard),
+    color      var(--md-sys-motion-duration-short-3) var(--md-sys-motion-easing-standard),
+    transform  var(--md-sys-motion-duration-short-2) var(--md-sys-motion-easing-standard);
+}
+
+.drawer-contribute .material-icons {
+  font-size: 20px;
+  color: var(--md-sys-color-primary);
+}
+
+.drawer-contribute:hover {
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+}
+
+.drawer-contribute:active {
+  transform: scale(0.97);
+  transition-duration: 80ms;
+}
+
+.drawer-contribute:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: -2px;
+}
+
+.drawer-contribute.active {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
 }
 
 /* Drawer section label — label-small, all-caps, muted */
@@ -292,6 +379,11 @@ md-list-item {
 md-list-item:hover {
   --md-list-item-container-color: var(--md-sys-color-surface-container-highest);
   --md-list-item-label-text-color: var(--md-sys-color-on-surface);
+}
+
+md-list-item:active {
+  transform: scale(0.985);
+  transition: transform 80ms var(--md-sys-motion-easing-standard);
 }
 
 /* Active (current page) — full-width rounded fill, no left accent bar */
@@ -398,7 +490,7 @@ html.iframe-mode .custom-loader-wrapper,
 .custom-loader-section path.loader {
   stroke: var(--md-sys-color-primary, #8fa5d4);
   stroke-dasharray: 1;
-  stroke-dashoffset: calc(1 - var(--p)); 
+  stroke-dashoffset: calc(1 - var(--p));
   transition: stroke-dashoffset 2s linear;
 }
 
@@ -430,24 +522,31 @@ html.iframe-mode .custom-loader-wrapper,
 /* Page Title (dynamically injected at top) */
 .dynamic-title {
   font-size: clamp(2rem, 3.5vw, 3rem);
-  font-weight: 600;
-  letter-spacing: -0.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  text-wrap: balance;
   color: var(--md-sys-color-on-surface);
-  padding: var(--space-4) 0;
+  padding: var(--space-4) 0 0;
+  margin-bottom: var(--space-2);
+}
+
+.doc-byline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding-bottom: var(--space-4);
   margin-bottom: var(--space-8);
   border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent);
 }
 
-/* Contributor Credit (dynamically injected at bottom) */
-.doc-credit {
-  display: block;
-  float: right;
-  clear: both;
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin-top: var(--space-8);
-  margin-bottom: var(--space-8);
-  color: var(--md-sys-color-on-surface);
+.doc-byline .material-icons {
+  font-size: 18px;
+  color: var(--md-sys-color-primary);
 }
 
 /* H1 — display-small, ~24px top space, 16px below before first paragraph */
@@ -461,6 +560,14 @@ html.iframe-mode .custom-loader-wrapper,
   padding:        0;
   /* No border-bottom — spacing leads separation, not a line */
   border:         none;
+}
+
+/* Anchors must clear the fixed app bar */
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  scroll-margin-top: calc(var(--topbar-h) + var(--space-6));
 }
 
 /* H2 — headline-small, ~32px above, spacing-led section separation */
@@ -566,13 +673,6 @@ html[data-theme="dark"] .markdown-body code {
   color: #e2e2e2;
   border: none;
 }
-html[data-theme="dark"] .markdown-body blockquote {
-  background: #535457;
-  border-left: 3px solid #06fff1;
-  color: #ffffff;
-  font-style: italic;
-  letter-spacing: 0.1em;
-}
 
 /* Tables */
 .markdown-body table {
@@ -630,14 +730,78 @@ html[data-theme="dark"] .markdown-body blockquote {
 /* ─────────────────────────────────────────────────────────────────────
    HOME PAGE (Developer Portal Redesign)
    ───────────────────────────────────────────────────────────────────── */
-.home-hero {
-  padding: 96px var(--space-4) 48px var(--space-4);
-  text-align: center;
-  background: radial-gradient(ellipse at top, color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent) 0%, transparent 70%);
-  position: relative;
+/* ── Article entrance ── */
+@keyframes articleEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
 }
 
-/* Restored: 4-color Google/LG stripe at the bottom of the hero */
+.markdown-body.article-enter {
+  animation: articleEnter var(--md-sys-motion-duration-medium-1)
+             var(--md-sys-motion-easing-standard-decel) backwards;
+}
+
+/* ── Theme cross-fade ── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--md-sys-motion-duration-short-3);
+  animation-timing-function: var(--md-sys-motion-easing-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+  .markdown-body.article-enter {
+    animation: none;
+  }
+  .copy-code-btn .material-icons {
+    animation: none;
+  }
+  .mdn-search-content,
+  .mdn-search-modal.active .mdn-search-content {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Cosmic hero — night sky in dark, day sky in light; nebula uses the Google palette ── */
+.home-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(540px, 74vh, 800px);
+  padding: calc(var(--topbar-h) + var(--space-6)) var(--space-4) 96px var(--space-4);
+  text-align: center;
+  background: radial-gradient(120% 90% at 50% -10%, #111a3a 0%, #0a0e20 45%, #05070f 100%);
+  color: #e8edf8;
+}
+
+/* Glow bleeding up from the stripe */
+.home-hero::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(
+    90deg,
+    #4285F4 0% 25%,
+    #EA4335 25% 50%,
+    #FBBC05 50% 75%,
+    #34A853 75% 100%
+  );
+  filter: blur(14px);
+  opacity: 0.55;
+}
+
+/* LOCKED BRAND: 4-color Google/LG stripe at the bottom of the hero */
 .home-hero::after {
   content: '';
   position: absolute;
@@ -645,6 +809,7 @@ html[data-theme="dark"] .markdown-body blockquote {
   left: 0;
   right: 0;
   height: 4px;
+  z-index: 1;
   background: linear-gradient(
     90deg,
     #4285F4 0% 25%,
@@ -655,42 +820,146 @@ html[data-theme="dark"] .markdown-body blockquote {
   opacity: 0.9;
 }
 
+/* ── Cosmos backdrop layers (decorative, aria-hidden) ── */
+.home-hero .cosmos {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Two tiled starfields at different densities */
+.cosmos-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,0.8) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 38% 64%, rgba(255,255,255,0.55) 50%, transparent 51%),
+    radial-gradient(1px 1px at 56% 12%, rgba(255,255,255,0.7) 50%, transparent 51%),
+    radial-gradient(1px 1px at 73% 41%, rgba(255,255,255,0.5) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 89% 74%, rgba(255,255,255,0.65) 50%, transparent 51%),
+    radial-gradient(1px 1px at 25% 86%, rgba(255,255,255,0.45) 50%, transparent 51%),
+    radial-gradient(1px 1px at 64% 92%, rgba(255,255,255,0.6) 50%, transparent 51%);
+  background-size: 300px 300px;
+}
+
+.cosmos-stars--far {
+  background-image:
+    radial-gradient(2px 2px at 18% 34%, rgba(190,210,255,0.9) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 47% 79%, rgba(255,255,255,0.8) 50%, transparent 51%),
+    radial-gradient(2px 2px at 82% 18%, rgba(255,240,210,0.85) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 68% 55%, rgba(200,255,220,0.7) 50%, transparent 51%);
+  background-size: 520px 520px;
+  animation: cosmosTwinkle 7s ease-in-out infinite alternate;
+}
+
+@keyframes cosmosTwinkle {
+  from { opacity: 0.55; }
+  to   { opacity: 1; }
+}
+
+/* Blobs sit toward the edges so the centre stays clear for the headline */
+.cosmos-nebula {
+  position: absolute;
+  inset: -10%;
+  /* %-sized so the blobs scale with the hero */
+  background:
+    radial-gradient(34% 48% at 16% 28%, rgba(66,133,244,0.30), transparent 70%),
+    radial-gradient(30% 44% at 85% 24%, rgba(234,67,53,0.18), transparent 70%),
+    radial-gradient(28% 40% at 74% 80%, rgba(251,188,5,0.14), transparent 70%),
+    radial-gradient(32% 46% at 26% 84%, rgba(52,168,83,0.18), transparent 70%);
+  filter: blur(48px) saturate(120%);
+  will-change: transform;
+  animation: nebulaDrift 90s ease-in-out infinite alternate;
+}
+
+@keyframes nebulaDrift {
+  from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+  to   { transform: translate3d(1.5%, 1%, 0) scale(1.06); }
+}
+
+/* Planet horizon arc, rises behind the stripe */
+.cosmos-planet {
+  position: absolute;
+  left: 50%;
+  bottom: -482px;
+  transform: translateX(-50%);
+  width: max(160%, 900px);
+  height: 520px;
+  border-radius: 50%;
+  background: #060912;
+  border: 1px solid rgba(154, 190, 255, 0.28);
+  box-shadow:
+    0 -30px 90px -10px rgba(66, 133, 244, 0.35),
+    inset 0 40px 80px -40px rgba(138, 180, 248, 0.45);
+}
+
+/* ── Hero content ── */
+@keyframes heroRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.home-hero .lg-badge        { animation: heroRise 0.55s cubic-bezier(0.2, 0.65, 0.25, 1) 0.05s backwards; }
+.home-hero h1               { animation: heroRise 0.55s cubic-bezier(0.2, 0.65, 0.25, 1) 0.12s backwards; }
+.home-hero p                { animation: heroRise 0.55s cubic-bezier(0.2, 0.65, 0.25, 1) 0.19s backwards; }
+.home-hero .hero-search-container { animation: heroRise 0.55s cubic-bezier(0.2, 0.65, 0.25, 1) 0.26s backwards; }
+
 .hero-search-container {
-  max-width: 620px;
+  width: 100%;
+  max-width: 680px;
   margin: var(--space-6) auto 0 auto;
   padding: 0 var(--space-4);
 }
 
+/* Glass search bar over the moving sky */
 .hero-search-btn {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: var(--space-4) var(--space-5);
-  background: var(--md-sys-color-surface-container-high);
-  border: 1px solid var(--md-sys-color-outline-variant);
+  padding: 18px 22px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top-color: rgba(255, 255, 255, 0.28);
   border-radius: 30px;
-  color: var(--md-sys-color-on-surface-variant);
+  color: rgba(255, 255, 255, 0.85);
   cursor: pointer;
-  box-shadow: var(--md-sys-elevation-shadow-1);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.16s ease-out, border-color 0.16s ease-out,
+              box-shadow 0.16s ease-out, transform 0.16s ease-out;
 }
 
-.hero-search-btn:hover {
-  background: var(--md-sys-color-surface-container-highest);
-  border-color: var(--md-sys-color-primary);
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent);
-  transform: translateY(-2.5px);
+.hero-search-btn:hover,
+.hero-search-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow:
+    0 -4px 28px -6px rgba(66, 133, 244, 0.35),
+    -18px 6px 28px -12px rgba(234, 67, 53, 0.28),
+    18px 6px 28px -12px rgba(52, 168, 83, 0.28),
+    0 10px 28px -10px rgba(251, 188, 5, 0.30);
+}
+
+.hero-search-btn:active {
+  transform: scale(0.985);
+  transition-duration: 0.08s;
 }
 
 .hero-search-btn:focus-visible {
-  outline: 2px solid var(--md-sys-color-primary);
-  outline-offset: 2px;
+  outline: 2px solid #8ab4f8;
+  outline-offset: 3px;
 }
 
+/* Overrides .markdown-body img, whose border/margin is meant for article images */
 .hero-search-btn .search-icon {
-  font-size: 24px;
-  margin-right: var(--space-3);
-  color: var(--md-sys-color-primary);
+  width: 22px;
+  height: 22px;
+  margin: 0 var(--space-3) 0 0;
+  border: none;
+  background: none;
+  display: inline-block;
   transition: transform 0.25s ease;
 }
 
@@ -703,18 +972,19 @@ html[data-theme="dark"] .markdown-body blockquote {
   font-weight: 400;
   flex: 1;
   text-align: left;
-  color: var(--md-sys-color-on-surface-variant);
+  color: rgba(232, 237, 248, 0.72);
+  letter-spacing: 0.01em;
 }
 
 .hero-search-btn .search-shortcut {
   font-size: 0.85rem;
   font-weight: 600;
-  border: 1px solid var(--md-sys-color-outline-variant);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 6px;
   padding: 2px 8px;
-  background: var(--md-sys-color-surface);
-  color: var(--md-sys-color-on-surface-variant);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(232, 237, 248, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .lg-badge {
@@ -723,31 +993,190 @@ html[data-theme="dark"] .markdown-body blockquote {
   gap: var(--space-2);
   padding: var(--space-1) var(--space-3);
   border-radius: 16px;
-  background: color-mix(in srgb, var(--md-sys-color-primary) 15%, transparent);
-  color: var(--md-sys-color-primary);
+  background: rgba(138, 180, 248, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #a8c7fa;
   font-size: 0.85rem;
   font-weight: 600;
+  letter-spacing: 0.015em;
   margin-bottom: var(--space-6);
-  border: 1px solid color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent);
+  border: 1px solid rgba(138, 180, 248, 0.28);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.16s ease-out, border-color 0.16s ease-out, transform 0.16s ease-out;
+}
+
+.lg-badge:hover {
+  background: rgba(138, 180, 248, 0.18);
+  border-color: rgba(138, 180, 248, 0.45);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.lg-badge:active {
+  transform: scale(0.97);
+  transition-duration: 0.08s;
+}
+
+.lg-badge:focus-visible {
+  outline: 2px solid #8ab4f8;
+  outline-offset: 3px;
+}
+
+[data-theme="light"] .lg-badge:hover {
+  background: rgba(26, 115, 232, 0.14);
+  border-color: rgba(26, 115, 232, 0.45);
+}
+
+[data-theme="light"] .lg-badge:focus-visible {
+  outline-color: #1a73e8;
 }
 
 .home-hero h1 {
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: clamp(2.75rem, 5.5vw, 5.25rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
   margin-bottom: var(--space-4);
-  line-height: 1.1;
-  background: linear-gradient(135deg, var(--md-sys-color-on-surface) 0%, var(--md-sys-color-on-surface-variant) 100%);
+  line-height: 1.04;
+  text-wrap: balance;
+  background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.68) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .home-hero p {
   font-size: clamp(1.1rem, 2vw, 1.25rem);
-  color: var(--md-sys-color-on-surface-variant);
-  max-width: 700px;
+  color: rgba(232, 240, 255, 0.78);
+  max-width: 660px;
   margin: 0 auto;
   line-height: 1.6;
+  text-wrap: pretty;
+}
+
+/* ── Light theme: the same scene by day ── */
+[data-theme="light"] .home-hero {
+  background: radial-gradient(120% 90% at 50% -10%, #c9dcfb 0%, #e6efff 48%, #f7fafe 100%);
+  color: #1b1f27;
+}
+
+[data-theme="light"] .cosmos-stars,
+[data-theme="light"] .cosmos-stars--far {
+  display: none;
+}
+
+[data-theme="light"] .cosmos-nebula {
+  background:
+    radial-gradient(34% 48% at 16% 28%, rgba(66,133,244,0.30), transparent 70%),
+    radial-gradient(30% 44% at 85% 24%, rgba(234,67,53,0.20), transparent 70%),
+    radial-gradient(28% 40% at 74% 80%, rgba(251,188,5,0.22), transparent 70%),
+    radial-gradient(32% 46% at 26% 84%, rgba(52,168,83,0.20), transparent 70%);
+}
+
+[data-theme="light"] .cosmos-planet {
+  background: #f4f8ff;
+  border-color: rgba(66, 133, 244, 0.35);
+  box-shadow:
+    0 -30px 90px -10px rgba(66, 133, 244, 0.30),
+    inset 0 40px 80px -40px rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .home-hero h1 {
+  background: linear-gradient(180deg, #1b1f27 0%, rgba(27, 31, 39, 0.72) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+[data-theme="light"] .home-hero p {
+  color: rgba(32, 41, 64, 0.8);
+}
+
+[data-theme="light"] .lg-badge {
+  background: rgba(26, 115, 232, 0.08);
+  color: #1a73e8;
+  border-color: rgba(26, 115, 232, 0.28);
+}
+
+[data-theme="light"] .hero-search-btn {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(13, 25, 50, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.95);
+  color: #1b1f27;
+}
+
+[data-theme="light"] .hero-search-btn:hover,
+[data-theme="light"] .hero-search-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(13, 25, 50, 0.18);
+}
+
+[data-theme="light"] .hero-search-btn:focus-visible {
+  outline-color: #1a73e8;
+}
+
+[data-theme="light"] .hero-search-btn .search-placeholder {
+  color: rgba(32, 41, 64, 0.66);
+}
+
+[data-theme="light"] .hero-search-btn .search-shortcut {
+  border-color: rgba(13, 25, 50, 0.16);
+  background: rgba(255, 255, 255, 0.6);
+  color: rgba(32, 41, 64, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* ── Accessibility preferences ── */
+@media (prefers-reduced-motion: reduce) {
+  .cosmos-nebula,
+  .cosmos-stars--far {
+    animation: none;
+  }
+  .home-hero .lg-badge,
+  .home-hero h1,
+  .home-hero p,
+  .home-hero .hero-search-container,
+  .recent-doc-item,
+  .start-card {
+    animation: none;
+  }
+  .hero-search-btn,
+  .hero-search-btn .search-icon,
+  .home-doc-grid-wrap,
+  .browse-toggle .material-icons,
+  .start-card-hint span {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .hero-search-btn,
+  .lg-badge {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #10141f;
+  }
+  [data-theme="light"] .hero-search-btn,
+  [data-theme="light"] .lg-badge {
+    background: #f4f7fd;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .hero-search-btn {
+    background: #0b0e17;
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+  .home-hero p {
+    color: #ffffff;
+  }
+  [data-theme="light"] .hero-search-btn {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.65);
+  }
+  [data-theme="light"] .home-hero p {
+    color: #0b0e17;
+  }
 }
 
 /* Common Section Container */
@@ -757,9 +1186,11 @@ html[data-theme="dark"] .markdown-body blockquote {
   margin: 0 auto;
 }
 
-.section-title {
+/* Two classes: must out-rank .markdown-body h2 (0,1,1), which sets a 40px top margin */
+.markdown-body .section-title {
   font-size: 1.5rem;
   font-weight: 700;
+  margin-top: 0;
   margin-bottom: var(--space-6);
   color: var(--md-sys-color-on-surface);
 }
@@ -768,7 +1199,7 @@ html[data-theme="dark"] .markdown-body blockquote {
 .recent-docs-grid {
   display: grid;
   gap: var(--space-3);
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
 }
 
 .recent-doc-item {
@@ -778,23 +1209,304 @@ html[data-theme="dark"] .markdown-body blockquote {
   padding: var(--space-4);
   background: var(--md-sys-color-surface-container-low);
   border: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.18s ease, border-color 0.18s ease,
+              transform 0.18s ease, box-shadow 0.18s ease;
   color: var(--md-sys-color-on-surface);
   font-weight: 500;
+  animation: heroRise 0.5s cubic-bezier(0.2, 0.65, 0.25, 1) backwards;
 }
 
-.recent-doc-item:hover, .recent-doc-item:focus {
+.recent-doc-item:nth-child(1) { animation-delay: 0.32s; }
+.recent-doc-item:nth-child(2) { animation-delay: 0.38s; }
+.recent-doc-item:nth-child(3) { animation-delay: 0.44s; }
+.recent-doc-item:nth-child(4) { animation-delay: 0.50s; }
+.recent-doc-item:nth-child(5) { animation-delay: 0.56s; }
+
+@media (hover: hover) and (pointer: fine) {
+  .recent-doc-item:hover {
+    background: var(--md-sys-color-surface-container-high);
+    border-color: var(--md-sys-color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -12px color-mix(in srgb, var(--md-sys-color-primary) 40%, transparent);
+  }
+}
+
+.recent-doc-item:focus {
   background: var(--md-sys-color-surface-container-high);
   border-color: var(--md-sys-color-primary);
-  transform: translateY(-2px);
   outline: none;
+}
+
+.recent-doc-item:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: 0.06s;
 }
 
 .recent-doc-item .material-icons {
   color: var(--md-sys-color-primary);
-  opacity: 0.8;
+  opacity: 0.85;
+}
+.recent-doc-item:nth-child(4n+1) .material-icons { color: #4285F4; }
+.recent-doc-item:nth-child(4n+2) .material-icons { color: #EA4335; }
+.recent-doc-item:nth-child(4n+3) .material-icons { color: #FBBC05; }
+.recent-doc-item:nth-child(4n+4) .material-icons { color: #34A853; }
+
+/* ── Start here cards ── */
+/* min() so a track never demands more width than the container has */
+.start-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+}
+
+.start-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease,
+              transform 0.18s ease, box-shadow 0.18s ease;
+  animation: heroRise 0.5s cubic-bezier(0.2, 0.65, 0.25, 1) backwards;
+}
+
+.start-card:nth-child(1) { border-top: 3px solid #4285F4; animation-delay: 0.30s; }
+.start-card:nth-child(2) { border-top: 3px solid #EA4335; animation-delay: 0.36s; }
+.start-card:nth-child(3) { border-top: 3px solid #FBBC05; animation-delay: 0.42s; }
+
+/* Pointer-only: on touch, :hover sticks after tap */
+@media (hover: hover) and (pointer: fine) {
+  .start-card:hover {
+    background: var(--md-sys-color-surface-container-high);
+    border-color: var(--md-sys-color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -12px color-mix(in srgb, var(--md-sys-color-primary) 40%, transparent);
+  }
+}
+
+.start-card:focus-visible {
+  background: var(--md-sys-color-surface-container-high);
+  border-color: var(--md-sys-color-primary);
+  outline: none;
+}
+
+.start-card:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: 0.06s;
+}
+
+.start-card-num {
+  font-family: var(--md-sys-typescale-font-family-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.start-card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+  line-height: 1.3;
+}
+
+.start-card-hint {
+  margin-top: auto;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--md-sys-color-primary);
+}
+
+.start-card-hint span {
+  display: inline-block;
+  transition: transform 0.18s ease;
+}
+.start-card:hover .start-card-hint span {
+  transform: translateX(3px);
+}
+
+/* ── Browse all guides ── */
+/* Rule lives on the header, not the h2, so it spans the full column in a flex row */
+.browse-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  border-bottom: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 40%, transparent);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.markdown-body .browse-header .section-title {
+  margin: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  line-height: 1.2;
+}
+
+.browse-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 100px;
+  background: transparent;
+  border: 1px solid var(--md-sys-color-outline);
+  color: var(--md-sys-color-on-surface);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.16s ease-out, border-color 0.16s ease-out, transform 0.16s ease-out;
+}
+
+.browse-toggle:hover {
+  background: var(--md-sys-color-surface-container-high);
+  border-color: var(--md-sys-color-on-surface);
+}
+
+.browse-toggle:active {
+  transform: scale(0.96);
+  transition-duration: 0.08s;
+}
+
+.browse-toggle:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.browse-toggle .material-icons {
+  font-size: 20px;
+  transition: transform 0.3s cubic-bezier(0.2, 0.65, 0.25, 1);
+}
+
+.browse-toggle.expanded .material-icons {
+  transform: rotate(180deg);
+}
+
+/* grid-template-rows keeps expand/collapse symmetric and interruptible */
+.home-doc-grid-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.2, 0.65, 0.25, 1);
+}
+
+.home-doc-grid-wrap.open {
+  grid-template-rows: 1fr;
+}
+
+.home-doc-grid {
+  overflow: hidden;
+  min-height: 0;
+  visibility: hidden;
+  transition: visibility 0s 0.35s;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  /* Both needed: a min-height item would otherwise pin the row and overlap the next */
+  grid-auto-rows: min-content;
+  align-items: start;
+  gap: var(--space-2);
+  /* No margin or padding: either leaks height while the row is collapsed */
+}
+
+.home-doc-grid-wrap.open .home-doc-grid {
+  visibility: visible;
+  transition: visibility 0s;
+  overflow-y: auto;
+  max-height: min(60vh, 440px);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain; /* don't scroll-chain the page at the ends */
+}
+
+.home-doc-item {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.home-doc-item:hover,
+.home-doc-item:focus-visible {
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  outline: none;
+}
+
+.home-doc-item:active {
+  transform: scale(0.98);
+}
+
+/* ── Homepage footer ── */
+.home-footer {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  border-top: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent);
+}
+
+.home-footer p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.home-footer-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.home-footer-links a {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.home-footer-links a:hover {
+  color: var(--md-sys-color-on-surface);
+}
+
+/* LOCKED BRAND: GO Store globe */
+.go-store-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.go-store-link svg {
+  height: 20px;
+  width: auto;
+  transition: transform 0.25s cubic-bezier(0.2, 0.65, 0.25, 1);
+}
+
+/* The mark is drawn for dark backgrounds; give it an edge rather than recolouring it */
+[data-theme="light"] .go-store-link svg {
+  filter:
+    drop-shadow(0 0 0.5px rgba(13, 25, 50, 0.55))
+    drop-shadow(0 1px 2px rgba(13, 25, 50, 0.22));
+}
+
+.go-store-link:hover svg {
+  transform: rotate(-8deg) scale(1.08);
 }
 
 /* Features Grid */
@@ -898,8 +1610,16 @@ html[data-theme="dark"] .markdown-body blockquote {
 /* ─────────────────────────────────────────────────────────────────────
    MDN-STYLE SEARCH MODAL
    ───────────────────────────────────────────────────────────────────── */
+/* Always laid out so it can animate OUT as well as in; hidden via
+   opacity/visibility rather than display (display can't transition). */
 .mdn-search-modal {
-  display: none;
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--md-sys-motion-duration-short-3) var(--md-sys-motion-easing-emphasized-accel),
+    visibility 0s linear var(--md-sys-motion-duration-short-3);
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.4);
@@ -912,7 +1632,27 @@ html[data-theme="dark"] .markdown-body blockquote {
 }
 
 .mdn-search-modal.active {
-  display: flex;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity var(--md-sys-motion-duration-short-4) var(--md-sys-motion-easing-emphasized-decel),
+    visibility 0s linear 0s;
+}
+
+/* The panel grows from whichever control opened it — transform-origin is set
+   at runtime in app.js to the trigger's center (hero bar or header pill). */
+.mdn-search-content {
+  transform: scale(0.96);
+  transition: transform var(--md-sys-motion-duration-short-3)
+              var(--md-sys-motion-easing-emphasized-accel);
+  will-change: transform;
+}
+
+.mdn-search-modal.active .mdn-search-content {
+  transform: scale(1);
+  transition: transform var(--md-sys-motion-duration-short-4)
+              var(--md-sys-motion-easing-emphasized-decel);
 }
 
 .mdn-search-content {
@@ -1189,6 +1929,11 @@ html[data-theme="dark"] .markdown-body blockquote {
   color: var(--md-sys-color-on-surface);
 }
 
+.header-search-trigger:active {
+  transform: scale(0.96);
+  transition-duration: 0.08s;
+}
+
 .header-search-trigger .material-icons {
   font-size: 20px;
 }
@@ -1196,15 +1941,19 @@ html[data-theme="dark"] .markdown-body blockquote {
 .header-search-trigger .search-text {
   font-size: 14px;
   font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .header-search-trigger .search-shortcut-key {
-  font-size: 12px;
+  font-family: var(--md-sys-typescale-font-family-mono);
+  font-size: 11px;
   font-weight: 600;
+  line-height: 1.5;
   border: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: 4px;
-  padding: 0 4px;
+  border-radius: 5px;
+  padding: 1px 6px;
   background: var(--md-sys-color-surface);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--md-sys-color-on-surface) 10%, transparent);
 }
 .cta-primary {
   background: var(--md-sys-color-primary);
@@ -1225,6 +1974,16 @@ html[data-theme="dark"] .markdown-body blockquote {
 .cta-secondary:hover {
   background: var(--md-sys-color-surface-container-high);
   border-color: var(--md-sys-color-on-surface);
+}
+
+.cta-primary:active,
+.cta-secondary:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.08s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .go-store-link svg { transition: none; }
 }
 
 
@@ -1309,13 +2068,26 @@ html[data-theme="dark"] .markdown-body blockquote {
   padding: 0 var(--space-1);
 }
 
+/* A <button> so mobile can collapse it; on desktop it reads as a plain label */
 .toc-heading {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: inherit;
   font-size:      var(--md-sys-typescale-label-small-size);
   font-weight:    var(--md-sys-typescale-label-small-weight);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--md-sys-color-on-surface-variant);
   margin: 0 0 var(--space-3) var(--space-3);
+  padding: 0;
+  cursor: default;
+}
+
+.toc-heading .material-icons {
+  display: none;
 }
 
 .toc-list {
@@ -1352,10 +2124,11 @@ html[data-theme="dark"] .markdown-body blockquote {
   background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent);
   text-decoration: none;
 }
+/* No font-weight change: it reflows the link width and jitters the TOC while scrolling */
 .toc-link.active {
   color: var(--md-sys-color-primary);
-  font-weight: 500;
   background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+  box-shadow: inset 2px 0 0 var(--md-sys-color-primary);
 }
 
 

@@ -16,10 +16,26 @@ function getCurrentTheme() {
 }
 
 /**
- * Applies the given theme by setting data-theme on <html>.
- * Also swaps the icon inside #theme-toggle.
+ * Swaps the theme, cross-fading via View Transitions where supported.
  */
-function applyTheme(theme) {
+function applyTheme(theme, animated = false) {
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Only a deliberate toggle animates: applyTheme runs more than once per
+  // load, and overlapping view transitions abort.
+  if (animated && document.startViewTransition && !prefersReduced) {
+    const vt = document.startViewTransition(() => _setTheme(theme));
+    // The callback still runs if the transition aborts, so swallow the rejection.
+    vt.ready?.catch(() => {});
+    vt.finished?.catch(() => {});
+  } else {
+    _setTheme(theme);
+  }
+}
+
+/**
+ * Sets data-theme on <html> and swaps the icon inside #theme-toggle.
+ */
+function _setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(STORAGE_KEY, theme);
 
@@ -46,7 +62,7 @@ function applyTheme(theme) {
  */
 function toggleTheme() {
   const next = getCurrentTheme() === 'dark' ? 'light' : 'dark';
-  applyTheme(next);
+  applyTheme(next, true);
 }
 
 /**

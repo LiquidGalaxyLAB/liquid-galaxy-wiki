@@ -38,7 +38,13 @@ if (!document.getElementById('global-lightbox')) {
     const wrapper = e.target.closest('.zoomable-image-wrapper');
     if (wrapper) {
       const img = wrapper.querySelector('img');
-      document.getElementById('global-lightbox-img').src = img.src;
+      const full = document.getElementById('global-lightbox-img');
+      full.src = img.src;
+      // transform-origin is relative to the target's own box, so subtract its offset
+      const t = img.getBoundingClientRect();
+      const f = full.getBoundingClientRect();
+      full.style.transformOrigin =
+        `${t.left + t.width / 2 - f.left}px ${t.top + t.height / 2 - f.top}px`;
       lightbox.classList.add('active');
     }
     
@@ -57,6 +63,11 @@ export function attachCopyButtons(container) {
 
     const wrapper = document.createElement('div');
     wrapper.className = 'code-block-wrapper';
+    const codeEl = pre.querySelector('code');
+    const langMatch = codeEl && codeEl.className.match(/language-([\w-]+)/);
+    if (langMatch && langMatch[1] !== 'plaintext' && langMatch[1] !== 'undefined') {
+      wrapper.dataset.lang = langMatch[1];
+    }
     pre.parentNode.insertBefore(wrapper, pre);
     
     const btn = document.createElement('button');
